@@ -1,32 +1,38 @@
 #ifndef COMPONENTS_H_INCLUDED
 #define COMPONENTS_H_INCLUDED
 
-#include "cocos2d.h"
+#include "Dependencies/entt.hpp"
 
+#include "cocos2d.h"
+#include <vector>
+
+using std::vector;
 USING_NS_CC;
 
-enum CellStatus {
-    ALIVE, DEAD
-};
-
 struct Transform {
-    Transform(Vec2 pos, Size sze): position(pos), size(sze) { }
+    Transform(Vec2 pos, float scle, float ang): position(pos), scale(scle), angle(ang) { }
 
     Vec2 position;
-    Size size;
+    float scale;
+    float angle;
 };
 
-struct Renderable {
-    Renderable(Color4F clr): color(clr) { }
+struct DrawableShape {
+    DrawableShape(const vector<Vec2>& vrtecies, Color4F fllColor,Color4F brderColor): vertecies(vrtecies),
+                                                                                      fillColor(fllColor),
+                                                                                      borderColor(brderColor) { }
+    vector<Vec2> vertecies;
 
-    Color4F color;
+    Color4F fillColor;
+    Color4F borderColor;
 };
 
-struct Cell {
-    Cell(CellStatus cstatus): status(cstatus) { }
-
-    CellStatus status;
+struct Physics {
+    Physics(PhysicsBody* body): physicsBody(body) { }
+    PhysicsBody* physicsBody;
 };
 
+//TODO: USING TAGS
+struct Meteorite {};
 
 #endif // COMPONENTS_H_INCLUDED

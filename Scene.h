@@ -17,40 +17,44 @@ public:
     }
 
     bool init() {
-        if(!cocos2d::Scene::init()) return false;
+        if(!cocos2d::Scene::initWithPhysics()) return false;
 
         DrawNode* drawer = DrawNode::create();
         addChild(drawer);
 
-        for(int i = 0;i < 100; ++i) {
-            auto entity = registry.create();
-            //registry.assign<Transform>(entity, Vec2(i, 0),
-            registry.assign<Transform>(entity, Vec2(rand() % 16, rand() % 16),
-                                               Size(32, 32));
-            registry.assign<Cell>(entity, ALIVE);
-            registry.assign<Renderable>(entity, Color4F::GREEN);
+        _application = std::make_shared<BaseApplication>();
+        _application->addSystem(std::make_shared<DrawingSystem>(drawer));
+        _application->addSystem(std::make_shared<MeteorSpawnSystem>(20, 2.0f));
+        _application->addSystem(std::make_shared<PhysicsSystem>());
 
+        _application->getRegistry().on_construct<Physics>().connect<&MainScene::physicalComponentConnectionListener>(this);
+        _application->getRegistry().on_destroy<Physics>().connect<&MainScene::physicalComponentDisconnectionListener>(this);
 
-        }
-
-
-        lifeIteratingSystem = std::make_shared<LifeIteratingSystem>(3, 16);
-        renderingSystem = std::make_shared<RenderingSystem>(drawer);
+        //getPhysicsWorld()->setDebugDrawMask(0xFFFF);
 
         scheduleUpdate();
         return true;
     }
 
     void update(float delta) {
-        renderingSystem->update(delta, registry);
-        lifeIteratingSystem->update(delta, registry);
+        _application->update(delta);
     }
 
 private:
-    entt::registry registry;
 
-    std::shared_ptr<LifeIteratingSystem> lifeIteratingSystem;
-    std::shared_ptr<RenderingSystem> renderingSystem;
+    void physicalComponentConnectionListener(entt::registry& registry, entt::entity entity) {
+        Physics& physicsComponent = registry.get<Physics>(entity);
+        Node* bodyContainer = Node::create();
+        bodyContainer->addComponent(physicsComponent.physicsBody);
+        addChild(bodyContainer);
+    }
+
+    void physicalComponentDisconnectionListener(entt::registry& registry, entt::entity entity) {
+        Physics& physicsComponent = registry.get<Physics>(entity);
+        physicsComponent.physicsBody->getOwner()->removeFromParentAndCleanup(true);
+    }
+
+    std::shared_ptr<BaseApplication> _application;
 };
 
 #endif // __SCENE_H_

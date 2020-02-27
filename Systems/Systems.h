@@ -1,123 +1,162 @@
 #ifndef SYSTEMS_H_INCLUDED
 #define SYSTEMS_H_INCLUDED
 
-#include "Dependencies/entt.hpp"
 #include "cocos2d.h"
+#include "Dependencies/entt.hpp"
 #include "../Components/Components.h"
+
+#include <memory>
 #include <vector>
 
 using std::vector;
-
+using std::shared_ptr;
 USING_NS_CC;
 
-class RenderingSystem {
+Vec2 randomPoint(Vec2 maximalPoint) {
+    return Vec2(random(0.0f, maximalPoint.x),
+                random(0.0f, maximalPoint.y));
+}
+
+void physicalComponentDisconnectionListener(entt::registry& registry, entt::entity entity) {
+    Physics& physicsComponent = registry.get<Physics>(entity);
+    physicsComponent.physicsBody->release();
+}
+
+
+class ISystem {
 public:
-    RenderingSystem(DrawNode* drawer) {
-        _drawer = drawer;
+    virtual void update(entt::registry& registry, float delta) = 0;
+};
+
+class DrawingSystem : public ISystem {
+public:
+    DrawingSystem(DrawNode* renderer) {
+        _renderer = renderer;
     }
 
-    void update(float delta, entt::registry& registry) {
-        _drawer->clear();
+    void update(entt::registry& registry, float delta) {
+        _renderer->clear();
 
-        auto view = registry.view<Renderable, Transform>();
-
+        auto view = registry.view<DrawableShape, Transform>();
         for(auto entity : view) {
-            Renderable& renderable = view.get<Renderable>(entity);
+            DrawableShape& drawableShape = view.get<DrawableShape>(entity);
             Transform& transform = view.get<Transform>(entity);
 
-            _drawer->drawSolidRect(transform.position * transform.size.width,
-                                   transform.position * transform.size.width+ Vec2(transform.size),
-                                   renderable.color);
+            vector<Vec2> transformedVertecies(drawableShape.vertecies);
+            for(Vec2& vertex : transformedVertecies) {
+                vertex.scale(transform.scale);
+                vertex.rotate(Vec2::ZERO, transform.angle);
+                vertex.add(transform.position);
+            }
+
+            _renderer->drawPolygon(transformedVertecies.data(), transformedVertecies.size(),
+                                   drawableShape.fillColor, 1.0f, drawableShape.borderColor);
         }
     }
 
 private:
-    DrawNode* _drawer;
+    DrawNode* _renderer;
 };
 
-typedef entt::entity Entity;
-
-class LifeIteratingSystem {
+class MeteorSpawnSystem : public ISystem {
 public:
-    LifeIteratingSystem(int minimalLifeCount, int mapSize) {
-        _accumulate = 0.0f;
-
-        _minimalLifeCount = minimalLifeCount;
-        _mapSize = mapSize;
-
-        _cellMap = vector<vector<Entity>>(mapSize);
-        for(int i = 0;i < mapSize; ++i) {
-            _cellMap[i] = vector<Entity>(mapSize);
-            for(int j = 0;j < mapSize; ++j)
-                _cellMap[i][j] = entt::null;
-        }
+    MeteorSpawnSystem(int maximalMeteorsCount,
+                      float spawnTime) {
+        _maximalCount = maximalMeteorsCount;
+        _spawnTime = spawnTime;
     }
 
-    void update(float delta, entt::registry& registry) {
+    void update(entt::registry& registry, float delta) {
         _accumulate += delta;
 
-        if(_accumulate >= 2.0f) {
+        //if(entt::monostate<entt::hashed_string("Level")>() == 0)
+        if(_accumulate > _spawnTime) {
+            auto view = registry.view<Meteorite>();
 
-            for(int i = 0; i < _mapSize; ++i)
-                for(int j = 0;j < _mapSize; ++j)
-                    _cellMap[i][j] = entt::null;
+            if(view.size() < _maximalCount) {
+                auto newMeteorite = registry.create();
 
-            auto view = registry.view<Cell, Transform>();
-            for(auto entity : view) {
-                Transform& transform = view.get<Transform>(entity);
-                _cellMap[int(transform.position.y)][int(transform.position.x)] = entity;
-            }
+                float scale = random(0.5f, 1.5f);
 
-            vector<Entity> deadCells;
-
-            cocos2d::log("%d", registry.valid(getCell(-1, -1)));
-
-            for(int y = 0; y < _mapSize; ++y) {
-                for(int x = 0; x < _mapSize; ++x) {
-                    int neigboursCounter = 0;
-                    for(int i = -1; i < 2; ++i) {
-                        for(int j = - 1; j < 2; ++j) {
-                            if(i == j) continue;
-                            if(registry.valid(getCell(x + i, y + j))) neigboursCounter++;
-                        }
-                    }
-                    Entity entity = getCell(x, y);
-
-                    if(!registry.valid(entity) && neigboursCounter == 3) {
-                        auto newEntity = registry.create();
-                        registry.assign<Transform>(newEntity, Vec2(x, y), Size(32, 32));
-                        registry.assign<Renderable>(newEntity, Color4F::GREEN);
-                        registry.assign<Cell>(newEntity, ALIVE);
-
-
-                    } else if(registry.valid(entity)) {
-                        if(neigboursCounter > 3 || neigboursCounter < 2) {
-                            deadCells.push_back(entity);
-                        }
-                    }
+                vector<Vec2> vertecies;
+                for(float fi = 0.0f; fi < 360.0f; fi += 30.0f) {
+                    vertecies.push_back(20.0f * Vec2(std::cos(M_PI * fi / 180.0f) + random(0.0f, 0.25f),
+                                                     std::sin(M_PI * fi / 180.0f) + random(0.0f, 0.25f)));
                 }
+
+                registry.assign<DrawableShape>(newMeteorite, vertecies, Color4F::BLACK, Color4F::WHITE);
+                registry.assign<Transform>(newMeteorite,
+                                           randomPoint(Director::getInstance()->getVisibleSize()),
+                                           scale, 0.0f);
+                registry.assign<Meteorite>(newMeteorite);
+
+                std::transform(vertecies.begin(), vertecies.end(), vertecies.begin(), [scale](Vec2& position){ return position * scale; });
+
+                PhysicsBody* body = PhysicsBody::createPolygon(vertecies.data(), vertecies.size(), PhysicsMaterial(1.0f, 0.5f, 0.0f), Vec2::ZERO);
+
+                body->setGravityEnable(false);
+                body->setVelocity(randomPoint(Vec2(200.0f, 200.0f)) - Vec2(100.0f, 100.0f));
+
+                registry.assign<Physics>(newMeteorite, body);
+
+                _accumulate = 0.0f;
             }
-
-            for(auto entity : deadCells) registry.destroy(entity);
-
-            _accumulate = 0.0f;
         }
     }
 
 private:
-    Entity getCell(int x, int y) {
-        if(x < 0 || x >= _mapSize || y < 0 || y >= _mapSize) return entt::null;
+    int _maximalCount;
 
-        return _cellMap[y][x];
-    }
-
-    int _minimalLifeCount;
-    int _mapSize;
-
+    float _spawnTime;
     float _accumulate;
 
-    vector<vector<Entity>> _cellMap;
-
-
 };
+
+class PhysicsSystem: public ISystem {
+public:
+    PhysicsSystem() {
+        _visibleSize = Director::getInstance()->getVisibleSize();
+    }
+
+    void update(entt::registry& registry, float delta) {
+        auto view = registry.view<Physics, Transform>();
+        view.each([&](auto entity, Physics& physComponent, Transform& transformComponent) {
+            transformComponent.angle += physComponent.physicsBody->getAngularVelocity() * delta;
+            transformComponent.position += physComponent.physicsBody->getVelocity() * delta;
+            if(transformComponent.position.x < -64.0f)
+                transformComponent.position.x = _visibleSize.width + 64.0f;
+            else if(transformComponent.position.x > _visibleSize.width + 64.0f)
+                transformComponent.position.x = -64.0f;
+
+            if(transformComponent.position.y < -64.0f)
+                transformComponent.position.y = _visibleSize.height + 64.0f;
+            else if(transformComponent.position.y > _visibleSize.height + 64.0f)
+                transformComponent.position.y = -64.0f;
+
+            physComponent.physicsBody->getOwner()->setPosition(transformComponent.position);
+        });
+    }
+
+private:
+    Size _visibleSize;
+};
+
+class BaseApplication {
+public:
+    void addSystem(shared_ptr<ISystem> system) {
+        _systems.push_back(system);
+    }
+
+    void update(float delta) {
+        for(auto system : _systems) {
+            system->update(_registry, delta);
+        }
+    }
+
+    entt::registry& getRegistry() { return _registry; }
+private:
+    entt::registry _registry;
+    vector<shared_ptr<ISystem>> _systems;
+};
+
 #endif // SYSTEMS_H_INCLUDED
