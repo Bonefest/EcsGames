@@ -3,11 +3,14 @@
 
 #include "cocos2d.h"
 #include "Dependencies/entt.hpp"
+#include "../Events/Events.h"
 #include "../Components/Components.h"
 
 #include <memory>
 #include <vector>
+#include <map>
 
+using std::map;
 using std::vector;
 using std::shared_ptr;
 USING_NS_CC;
@@ -15,6 +18,10 @@ USING_NS_CC;
 Vec2 randomPoint(Vec2 maximalPoint) {
     return Vec2(random(0.0f, maximalPoint.x),
                 random(0.0f, maximalPoint.y));
+}
+
+float toRad(float degrees) {
+    return (degrees * M_PI) / 180.0f;
 }
 
 void physicalComponentDisconnectionListener(entt::registry& registry, entt::entity entity) {
@@ -80,8 +87,8 @@ public:
 
                 vector<Vec2> vertecies;
                 for(float fi = 0.0f; fi < 360.0f; fi += 30.0f) {
-                    vertecies.push_back(20.0f * Vec2(std::cos(M_PI * fi / 180.0f) + random(0.0f, 0.25f),
-                                                     std::sin(M_PI * fi / 180.0f) + random(0.0f, 0.25f)));
+                    vertecies.push_back(20.0f * Vec2(std::cos(toRad(fi)) + random(0.0f, 0.25f),
+                                                     std::sin(toRad(fi)) + random(0.0f, 0.25f)));
                 }
 
                 registry.assign<DrawableShape>(newMeteorite, vertecies, Color4F::BLACK, Color4F::WHITE);
@@ -141,8 +148,81 @@ private:
     Size _visibleSize;
 };
 
+class PlayerControllSystem : public ISystem {
+public:
+    //vector<pair<hashed_string, configuration>> playersData;
+    explicit PlayerControllSystem(entt::hashed_string playerTag, entt::dispatcher& dispatcher /*, KeyConfig keyConfig */) {
+        _playerTag = playerTag;
+
+        dispatcher.sink<KeyPressedEvent>().connect<&PlayerControllSystem::onKeyPressed>(*this);
+        dispatcher.sink<KeyReleasedEvent>().connect<&PlayerControllSystem::onKeyReleased>(*this);
+    }
+
+    virtual void update(entt::registry& registry, float delta) {
+        auto view = registry.view<entt::tag<"player"_hs>, Transform, Physics>();
+
+        for(auto player : view) {
+            if(registry.valid(player)) {
+                Transform& transformComponent = registry.get<Transform>(player);
+                Physics& physicsComponent = registry.get<Physics>(player);
+
+                Vec2 velocity = Vec2::ZERO;
+
+                log("%f", transformComponent.angle);
+
+                if(_pressedKeys[EventKeyboard::KeyCode::KEY_A]) transformComponent.angle += delta * 5;
+                if(_pressedKeys[EventKeyboard::KeyCode::KEY_D]) transformComponent.angle -= delta * 5;
+                if(_pressedKeys[EventKeyboard::KeyCode::KEY_W]) {
+                    velocity.x = std::cos(transformComponent.angle) * 20;
+                    velocity.y = std::sin(transformComponent.angle) * 20;
+                }
+
+                physicsComponent.physicsBody->setVelocity(velocity + physicsComponent.physicsBody->getVelocity());
+            }
+        }
+    }
+
+    void onKeyPressed(const KeyPressedEvent& event) {
+        _pressedKeys[event.key] = true;
+    }
+
+    void onKeyReleased(const KeyReleasedEvent& event) {
+        _pressedKeys[event.key] = false;
+    }
+
+private:
+    entt::hashed_string _playerTag;
+    map<EventKeyboard::KeyCode, bool> _pressedKeys;
+
+};
+
+class InputHandler {
+public:
+    InputHandler(Node* scene, EventDispatcher* dispatcher, entt::dispatcher& edispatcher):_dispatcher(edispatcher) {
+        auto klistener = EventListenerKeyboard::create();
+
+        klistener->onKeyPressed = CC_CALLBACK_2(InputHandler::onKeyPressed, this);
+        klistener->onKeyReleased = CC_CALLBACK_2(InputHandler::onKeyReleased, this);
+
+        dispatcher->addEventListenerWithSceneGraphPriority(klistener, scene);
+    }
+
+    void onKeyPressed(EventKeyboard::KeyCode key, Event* event) {
+        //_dispatcher.trigger<KeyPressedEvent>(key, currentTime);
+        _dispatcher.trigger<KeyPressedEvent>(key);
+    }
+
+    void onKeyReleased(EventKeyboard::KeyCode key, Event* event) {
+        _dispatcher.trigger<KeyReleasedEvent>(key);
+    }
+
+private:
+    entt::dispatcher& _dispatcher;
+};
+
 class BaseApplication {
 public:
+
     void addSystem(shared_ptr<ISystem> system) {
         _systems.push_back(system);
     }
@@ -154,8 +234,11 @@ public:
     }
 
     entt::registry& getRegistry() { return _registry; }
+    entt::dispatcher& getDispatcher() { return _dispatcher; }
+
 private:
     entt::registry _registry;
+    entt::dispatcher _dispatcher;
     vector<shared_ptr<ISystem>> _systems;
 };
 

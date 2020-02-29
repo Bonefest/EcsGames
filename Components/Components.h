@@ -32,6 +32,9 @@ struct Physics {
     PhysicsBody* physicsBody;
 };
 
+//struct Magnet
+//struct Particle
+
 //TODO: USING TAGS
 struct Meteorite {};
 
