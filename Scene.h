@@ -29,12 +29,14 @@ public:
         _application->addSystem(std::make_shared<DrawingSystem>(drawer));
         _application->addSystem(std::make_shared<MeteorSpawnSystem>(20, 2.0f));
         _application->addSystem(std::make_shared<PhysicsSystem>());
+        _application->addSystem(std::make_shared<BulletCollisionSystem>(_application->getDispatcher()));
         _application->addSystem(std::make_shared<PlayerControllSystem>("deprecated"_hs, _application->getDispatcher()));
 
         _application->getRegistry().on_construct<Physics>().connect<&MainScene::physicalComponentConnectionListener>(this);
         _application->getRegistry().on_destroy<Physics>().connect<&MainScene::physicalComponentDisconnectionListener>(this);
 
         _inputHandler = std::make_shared<InputHandler>(this, _eventDispatcher, _application->getDispatcher());
+        _collisionHandler = std::make_shared<CollisionHandler>(this, _eventDispatcher, _application->getDispatcher());
 
         initPlayer();
 
@@ -69,6 +71,7 @@ private:
         PhysicsBody* playerBody = cocos2d::PhysicsBody::createPolygon(verticies.data(), verticies.size(), PhysicsMaterial(1.0f, 0.0f, 1.0f), Vec2::ZERO);
         playerBody->setVelocityLimit(100.0f);
         playerBody->setAngularVelocityLimit(0.0f);
+        playerBody->setContactTestBitmask(0xFFFFFFFF);
 
         playerBody->setGravityEnable(false);
         registry.assign<Physics>(player, playerBody);
@@ -89,6 +92,7 @@ private:
 
     std::shared_ptr<BaseApplication> _application;
     std::shared_ptr<InputHandler> _inputHandler;
+    std::shared_ptr<CollisionHandler> _collisionHandler;
 };
 
 #endif // __SCENE_H_

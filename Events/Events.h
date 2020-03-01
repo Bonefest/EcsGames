@@ -17,5 +17,11 @@ struct KeyReleasedEvent {
 };
 
 
+struct CollisionBeginEvent {
+    explicit CollisionBeginEvent(entt::entity enttA, entt::entity enttB): entityA(enttA), entityB(enttB) { }
+
+    entt::entity entityA;
+    entt::entity entityB;
+};
 
 #endif // EVENTS_H_INCLUDED

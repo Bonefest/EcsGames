@@ -24,6 +24,10 @@ float toRad(float degrees) {
     return (degrees * M_PI) / 180.0f;
 }
 
+float toDeg(float radians) {
+    return (radians * 180.0f) / M_PI;
+}
+
 void physicalComponentDisconnectionListener(entt::registry& registry, entt::entity entity) {
     Physics& physicsComponent = registry.get<Physics>(entity);
     physicsComponent.physicsBody->release();
@@ -100,10 +104,10 @@ public:
                 std::transform(vertecies.begin(), vertecies.end(), vertecies.begin(), [scale](Vec2& position){ return position * scale; });
 
                 PhysicsBody* body = PhysicsBody::createPolygon(vertecies.data(), vertecies.size(), PhysicsMaterial(1.0f, 0.5f, 0.0f), Vec2::ZERO);
-
+                body->setContactTestBitmask(0xFFFFFFFF);
+                body->setTag(int(newMeteorite));
                 body->setGravityEnable(false);
                 body->setVelocity(randomPoint(Vec2(200.0f, 200.0f)) - Vec2(100.0f, 100.0f));
-
                 registry.assign<Physics>(newMeteorite, body);
 
                 _accumulate = 0.0f;
@@ -166,18 +170,24 @@ public:
                 Transform& transformComponent = registry.get<Transform>(player);
                 Physics& physicsComponent = registry.get<Physics>(player);
 
+                Vec2 bodyVelocity = physicsComponent.physicsBody->getVelocity();
                 Vec2 velocity = Vec2::ZERO;
-
-                log("%f", transformComponent.angle);
+                Vec2 opposite = Vec2::ZERO;
 
                 if(_pressedKeys[EventKeyboard::KeyCode::KEY_A]) transformComponent.angle += delta * 5;
                 if(_pressedKeys[EventKeyboard::KeyCode::KEY_D]) transformComponent.angle -= delta * 5;
                 if(_pressedKeys[EventKeyboard::KeyCode::KEY_W]) {
                     velocity.x = std::cos(transformComponent.angle) * 20;
                     velocity.y = std::sin(transformComponent.angle) * 20;
+                } else {
+                    if(abs(bodyVelocity.x) > 0.001) opposite.x = -bodyVelocity.x / abs(bodyVelocity.x) * delta * 40;
+                    if(abs(bodyVelocity.y) > 0.001) opposite.y = -bodyVelocity.y / abs(bodyVelocity.y) * delta * 40;
+
                 }
 
-                physicsComponent.physicsBody->setVelocity(velocity + physicsComponent.physicsBody->getVelocity());
+                physicsComponent.physicsBody->getOwner()->setRotation(toDeg(-transformComponent.angle));
+
+                physicsComponent.physicsBody->setVelocity(velocity +  bodyVelocity + opposite);
             }
         }
     }
@@ -194,6 +204,31 @@ private:
     entt::hashed_string _playerTag;
     map<EventKeyboard::KeyCode, bool> _pressedKeys;
 
+};
+
+class BulletCollisionSystem : public ISystem {
+public:
+    BulletCollisionSystem(entt::dispatcher& dispatcher) {
+        dispatcher.sink<CollisionBeginEvent>().connect<&BulletCollisionSystem::onCollisionBegin>(*this);
+    }
+
+    virtual void update(entt::registry& registry, float delta) {
+        for(CollisionBeginEvent event : _collisionEvents) {
+            if(registry.valid(event.entityA) && registry.valid(event.entityB)) {
+                registry.destroy(event.entityA);
+                registry.destroy(event.entityB);
+            }
+        }
+
+        _collisionEvents.clear();
+    }
+
+    void onCollisionBegin(const CollisionBeginEvent& event) {
+        _collisionEvents.push_back(event);
+    }
+
+private:
+    vector<CollisionBeginEvent> _collisionEvents;
 };
 
 class InputHandler {
@@ -214,6 +249,26 @@ public:
 
     void onKeyReleased(EventKeyboard::KeyCode key, Event* event) {
         _dispatcher.trigger<KeyReleasedEvent>(key);
+    }
+
+private:
+    entt::dispatcher& _dispatcher;
+};
+
+class CollisionHandler {
+public:
+    CollisionHandler(Node* scene, EventDispatcher* dispatcher, entt::dispatcher& edispatcher):_dispatcher(edispatcher) {
+
+        auto contactListener = EventListenerPhysicsContact::create();
+        contactListener->onContactBegin = CC_CALLBACK_1(CollisionHandler::onCollisionBegin, this);
+
+        dispatcher->addEventListenerWithSceneGraphPriority(contactListener, scene);
+    }
+
+    bool onCollisionBegin(PhysicsContact& contact) {
+        _dispatcher.trigger<CollisionBeginEvent>(entt::registry::entity_type(contact.getShapeA()->getBody()->getTag()),
+                                                 entt::registry::entity_type(contact.getShapeB()->getBody()->getTag()));
+        return true;
     }
 
 private:

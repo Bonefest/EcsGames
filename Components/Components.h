@@ -10,15 +10,15 @@ using std::vector;
 USING_NS_CC;
 
 struct Transform {
-    Transform(Vec2 pos, float scle, float ang): position(pos), scale(scle), angle(ang) { }
+    explicit Transform(Vec2 pos, float scle, float ang): position(pos), scale(scle), angle(ang) { }
 
     Vec2 position;
     float scale;
-    float angle;
+    float angle;    //TODO: Округление
 };
 
 struct DrawableShape {
-    DrawableShape(const vector<Vec2>& vrtecies, Color4F fllColor,Color4F brderColor): vertecies(vrtecies),
+    explicit DrawableShape(const vector<Vec2>& vrtecies, Color4F fllColor,Color4F brderColor): vertecies(vrtecies),
                                                                                       fillColor(fllColor),
                                                                                       borderColor(brderColor) { }
     vector<Vec2> vertecies;
@@ -27,8 +27,20 @@ struct DrawableShape {
     Color4F borderColor;
 };
 
+struct Ship {
+    explicit Ship(float shipSpeed, float mxHealth, float mxAmmo): speed(shipSpeed), maxHealth(mxHealth), maxAmmo(mxAmmo) { }
+
+    float speed;
+
+    int maxHealth;
+    int health;
+
+    int maxAmmo;
+    int ammo;
+};
+
 struct Physics {
-    Physics(PhysicsBody* body): physicsBody(body) { }
+    explicit Physics(PhysicsBody* body): physicsBody(body) { }
     PhysicsBody* physicsBody;
 };
 
