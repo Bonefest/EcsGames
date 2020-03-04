@@ -146,6 +146,31 @@ public:
 
             physComponent.physicsBody->getOwner()->setPosition(transformComponent.position);
         });
+
+
+        auto shipView = registry.view<Ship>();
+        for(auto ship : shipView) {
+
+            Ship& shipComponent = shipView.get<Ship>(ship);
+
+            vector<entt::entity> outsideBullets;
+
+            auto bulletsView = registry.view<Bullet, Transform>();
+
+            for(auto bullet : bulletsView) {
+                Transform& transform = bulletsView.get<Transform>(bullet);
+
+               if(transform.position.x <= -64.0f || transform.position.x >= _visibleSize.width + 64.0f ||
+                  transform.position.y <= -64.0f || transform.position.y >= _visibleSize.height + 64.0f) {
+                    outsideBullets.push_back(bullet);
+                    shipComponent.ammo++;
+                }
+            }
+
+            for(auto& bullet : outsideBullets) {
+                registry.destroy(bullet);
+            }
+        }
     }
 
 private:
@@ -163,12 +188,13 @@ public:
     }
 
     virtual void update(entt::registry& registry, float delta) {
-        auto view = registry.view<entt::tag<"player"_hs>, Transform, Physics>();
+        auto view = registry.view<entt::tag<"player"_hs>, Transform, Physics, Ship>();
 
         for(auto player : view) {
             if(registry.valid(player)) {
                 Transform& transformComponent = registry.get<Transform>(player);
                 Physics& physicsComponent = registry.get<Physics>(player);
+                Ship& shipComponent = registry.get<Ship>(player);
 
                 Vec2 bodyVelocity = physicsComponent.physicsBody->getVelocity();
                 Vec2 velocity = Vec2::ZERO;
@@ -177,17 +203,23 @@ public:
                 if(_pressedKeys[EventKeyboard::KeyCode::KEY_A]) transformComponent.angle += delta * 5;
                 if(_pressedKeys[EventKeyboard::KeyCode::KEY_D]) transformComponent.angle -= delta * 5;
                 if(_pressedKeys[EventKeyboard::KeyCode::KEY_W]) {
-                    velocity.x = std::cos(transformComponent.angle) * 20;
-                    velocity.y = std::sin(transformComponent.angle) * 20;
+                    velocity.x = std::cos(transformComponent.angle) * shipComponent.speed;
+                    velocity.y = std::sin(transformComponent.angle) * shipComponent.speed;
                 } else {
-                    if(abs(bodyVelocity.x) > 0.001) opposite.x = -bodyVelocity.x / abs(bodyVelocity.x) * delta * 40;
-                    if(abs(bodyVelocity.y) > 0.001) opposite.y = -bodyVelocity.y / abs(bodyVelocity.y) * delta * 40;
+                    if(abs(bodyVelocity.x) > 0.001) opposite.x = -bodyVelocity.x / abs(bodyVelocity.x) * delta * shipComponent.speed * 2;
+                    if(abs(bodyVelocity.y) > 0.001) opposite.y = -bodyVelocity.y / abs(bodyVelocity.y) * delta * shipComponent.speed * 2;
 
                 }
 
                 physicsComponent.physicsBody->getOwner()->setRotation(toDeg(-transformComponent.angle));
 
                 physicsComponent.physicsBody->setVelocity(velocity +  bodyVelocity + opposite);
+
+                if(_pressedKeys[EventKeyboard::KeyCode::KEY_SPACE]){
+                        _pressedKeys[EventKeyboard::KeyCode::KEY_SPACE] = false;
+                        onPlayerShooted(player, registry);
+                }
+
             }
         }
     }
@@ -201,6 +233,37 @@ public:
     }
 
 private:
+    void onPlayerShooted(entt::entity player, entt::registry& registry) {
+        Transform& transformComponent = registry.get<Transform>(player);
+        Physics& physicsComponent = registry.get<Physics>(player);
+        Ship& shipComponent = registry.get<Ship>(player);
+
+        if(shipComponent.ammo > 0) {
+            entt::entity bullet = registry.create();
+
+            //TODO : FACTORY
+            vector<Vec2> bulletVerticies = {
+                Vec2(-1.0f, 1.0f),
+                Vec2( 1.0f, 1.0f),
+                Vec2( 1.0f,-1.0f),
+                Vec2(-1.0f,-1.0f)
+            };
+
+            PhysicsBody* bulletBody = PhysicsBody::createPolygon(bulletVerticies.data(), bulletVerticies.size(), PhysicsMaterial(1.0f, 0.5f, 0.0f), Vec2::ZERO);
+            bulletBody->setContactTestBitmask(0xFFFFFFFF);
+            bulletBody->setTag(int(bullet));
+            bulletBody->setGravityEnable(false);
+            bulletBody->setVelocity(physicsComponent.physicsBody->getVelocity().getNormalized() * 200);
+
+            registry.assign<Bullet>(bullet);
+            registry.assign<DrawableShape>(bullet, bulletVerticies, Color4F::WHITE, Color4F::WHITE);
+            registry.assign<Transform>(bullet, transformComponent.position + Vec2(cos(transformComponent.angle), sin(transformComponent.angle)), 1.0f, transformComponent.angle);
+            registry.assign<Physics>(bullet, bulletBody);
+
+            shipComponent.ammo--;
+        }
+    }
+
     entt::hashed_string _playerTag;
     map<EventKeyboard::KeyCode, bool> _pressedKeys;
 
@@ -215,8 +278,15 @@ public:
     virtual void update(entt::registry& registry, float delta) {
         for(CollisionBeginEvent event : _collisionEvents) {
             if(registry.valid(event.entityA) && registry.valid(event.entityB)) {
-                registry.destroy(event.entityA);
-                registry.destroy(event.entityB);
+                entt::entity bullet = entt::null, entity;
+                if(registry.has<Bullet>(event.entityA)) { bullet = event.entityA; entity = event.entityB; }
+                else if(registry.has<Bullet>(event.entityB)) { bullet = event.entityB; entity = event.entityA; }
+
+                if(registry.valid(bullet) && !registry.has<entt::tag<"player"_hs>>(entity)) {
+                    registry.destroy(bullet);
+                    registry.destroy(entity);
+                }
+
             }
         }
 

@@ -28,7 +28,7 @@ struct DrawableShape {
 };
 
 struct Ship {
-    explicit Ship(float shipSpeed, float mxHealth, float mxAmmo): speed(shipSpeed), maxHealth(mxHealth), maxAmmo(mxAmmo) { }
+    explicit Ship(float shipSpeed, int mxHealth, int mxAmmo): speed(shipSpeed), maxHealth(mxHealth), maxAmmo(mxAmmo), ammo(mxAmmo) { }
 
     float speed;
 
@@ -37,6 +37,10 @@ struct Ship {
 
     int maxAmmo;
     int ammo;
+};
+
+struct Bullet {
+
 };
 
 struct Physics {
