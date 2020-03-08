@@ -9,8 +9,11 @@
 #include <memory>
 #include <vector>
 #include <map>
+#include <list>
 
 using std::map;
+using std::pair;
+using std::list;
 using std::vector;
 using std::shared_ptr;
 USING_NS_CC;
@@ -20,6 +23,17 @@ Vec2 randomPoint(Vec2 maximalPoint) {
                 random(0.0f, maximalPoint.y));
 }
 
+vector<Vec2> createRectangle(Size size) {
+        vector<Vec2> verticies = {
+            Vec2(-size.width / 2, size.height / 2),
+            Vec2( size.width / 2, size.height / 2),
+            Vec2( size.width / 2,-size.height / 2),
+            Vec2(-size.width / 2,-size.height / 2)
+        };
+
+        return verticies;
+}
+
 float toRad(float degrees) {
     return (degrees * M_PI) / 180.0f;
 }
@@ -27,12 +41,6 @@ float toRad(float degrees) {
 float toDeg(float radians) {
     return (radians * 180.0f) / M_PI;
 }
-
-void physicalComponentDisconnectionListener(entt::registry& registry, entt::entity entity) {
-    Physics& physicsComponent = registry.get<Physics>(entity);
-    physicsComponent.physicsBody->release();
-}
-
 
 class ISystem {
 public:
@@ -99,7 +107,6 @@ public:
                 registry.assign<Transform>(newMeteorite,
                                            randomPoint(Director::getInstance()->getVisibleSize()),
                                            scale, 0.0f);
-                registry.assign<Meteorite>(newMeteorite);
 
                 std::transform(vertecies.begin(), vertecies.end(), vertecies.begin(), [scale](Vec2& position){ return position * scale; });
 
@@ -109,6 +116,10 @@ public:
                 body->setGravityEnable(false);
                 body->setVelocity(randomPoint(Vec2(200.0f, 200.0f)) - Vec2(100.0f, 100.0f));
                 registry.assign<Physics>(newMeteorite, body);
+
+                registry.assign<Meteorite>(newMeteorite);
+
+
 
                 _accumulate = 0.0f;
             }
@@ -163,7 +174,6 @@ public:
                if(transform.position.x <= -64.0f || transform.position.x >= _visibleSize.width + 64.0f ||
                   transform.position.y <= -64.0f || transform.position.y >= _visibleSize.height + 64.0f) {
                     outsideBullets.push_back(bullet);
-                    shipComponent.ammo++;
                 }
             }
 
@@ -190,6 +200,14 @@ public:
     virtual void update(entt::registry& registry, float delta) {
         auto view = registry.view<entt::tag<"player"_hs>, Transform, Physics, Ship>();
 
+        for(KeyPressedEvent& event : _receivedPressedKeys) {
+            _pressedKeys[event.key] = true;
+
+            if(event.key == EventKeyboard::KeyCode::KEY_SHIFT) {
+                onAcceleration(registry, true);
+            }
+        }
+
         for(auto player : view) {
             if(registry.valid(player)) {
                 Transform& transformComponent = registry.get<Transform>(player);
@@ -215,69 +233,98 @@ public:
 
                 physicsComponent.physicsBody->setVelocity(velocity +  bodyVelocity + opposite);
 
-                if(_pressedKeys[EventKeyboard::KeyCode::KEY_SPACE]){
-                        _pressedKeys[EventKeyboard::KeyCode::KEY_SPACE] = false;
-                        onPlayerShooted(player, registry);
-                }
 
+                if(_pressedKeys[EventKeyboard::KeyCode::KEY_SHIFT]) {
+                    physicsComponent.physicsBody->setVelocityLimit(shipComponent.speed * 2);
+                } else {
+                    physicsComponent.physicsBody->setVelocityLimit(shipComponent.speed);
+
+                }
+                if(_pressedKeys[EventKeyboard::KeyCode::KEY_SPACE]){
+                    _pressedKeys[EventKeyboard::KeyCode::KEY_SPACE] = false;
+                    onPlayerShooted(player, registry);
+                }
             }
         }
+
+        for(KeyReleasedEvent& event : _receivedReleasedKeys) {
+            _pressedKeys[event.key] = false;
+
+            if(event.key == EventKeyboard::KeyCode::KEY_SHIFT) {
+                onAcceleration(registry, false);
+            }
+        }
+
+        _receivedPressedKeys.clear();
+        _receivedReleasedKeys.clear();
     }
 
     void onKeyPressed(const KeyPressedEvent& event) {
-        _pressedKeys[event.key] = true;
+        _receivedPressedKeys.push_back(event);
     }
 
     void onKeyReleased(const KeyReleasedEvent& event) {
-        _pressedKeys[event.key] = false;
+        _receivedReleasedKeys.push_back(event);
     }
 
 private:
     void onPlayerShooted(entt::entity player, entt::registry& registry) {
         Transform& transformComponent = registry.get<Transform>(player);
-        Physics& physicsComponent = registry.get<Physics>(player);
         Ship& shipComponent = registry.get<Ship>(player);
 
         if(shipComponent.ammo > 0) {
             entt::entity bullet = registry.create();
 
             //TODO : FACTORY
-            vector<Vec2> bulletVerticies = {
-                Vec2(-1.0f, 1.0f),
-                Vec2( 1.0f, 1.0f),
-                Vec2( 1.0f,-1.0f),
-                Vec2(-1.0f,-1.0f)
-            };
+            vector<Vec2> bulletVerticies = createRectangle(Size(2.0f, 2.0f));
 
             PhysicsBody* bulletBody = PhysicsBody::createPolygon(bulletVerticies.data(), bulletVerticies.size(), PhysicsMaterial(1.0f, 0.5f, 0.0f), Vec2::ZERO);
             bulletBody->setContactTestBitmask(0xFFFFFFFF);
             bulletBody->setTag(int(bullet));
             bulletBody->setGravityEnable(false);
-            bulletBody->setVelocity(physicsComponent.physicsBody->getVelocity().getNormalized() * 200);
+            bulletBody->setVelocity(Vec2(cos(transformComponent.angle), sin(transformComponent.angle)) * shipComponent.speed * 2);
 
-            registry.assign<Bullet>(bullet);
+            registry.assign<Bullet>(bullet, player);
             registry.assign<DrawableShape>(bullet, bulletVerticies, Color4F::WHITE, Color4F::WHITE);
-            registry.assign<Transform>(bullet, transformComponent.position + Vec2(cos(transformComponent.angle), sin(transformComponent.angle)), 1.0f, transformComponent.angle);
+            registry.assign<Transform>(bullet, transformComponent.position + Vec2(cos(-transformComponent.angle), sin(-transformComponent.angle)), 1.0f, transformComponent.angle);
             registry.assign<Physics>(bullet, bulletBody);
 
             shipComponent.ammo--;
         }
     }
 
+    void onAcceleration(entt::registry& registry, bool pressed) {
+        registry.view<Ship, Physics, DrawableShape, entt::tag<"player"_hs>>().each([&](auto player, Ship& ship, Physics& physics, DrawableShape& drawable, auto passComponent) {
+            if(pressed) {
+                ship.speed *= 2;
+                drawable.borderColor = Color4F(1.0f, 1.0f, 1.0f, 0.5f);
+            }
+            else {
+                ship.speed /= 2;
+                drawable.borderColor = Color4F::WHITE;
+            }
+
+            physics.physicsBody->setVelocityLimit(ship.speed);
+        });
+    }
+
     entt::hashed_string _playerTag;
     map<EventKeyboard::KeyCode, bool> _pressedKeys;
 
+    vector<KeyPressedEvent> _receivedPressedKeys;
+    vector<KeyReleasedEvent> _receivedReleasedKeys;
 };
 
 class BulletCollisionSystem : public ISystem {
 public:
-    BulletCollisionSystem(entt::dispatcher& dispatcher) {
+    BulletCollisionSystem(entt::dispatcher& dispatcher): _dispatcher(dispatcher) {
         dispatcher.sink<CollisionBeginEvent>().connect<&BulletCollisionSystem::onCollisionBegin>(*this);
     }
 
     virtual void update(entt::registry& registry, float delta) {
         for(CollisionBeginEvent event : _collisionEvents) {
             if(registry.valid(event.entityA) && registry.valid(event.entityB)) {
+
                 entt::entity bullet = entt::null, entity;
                 if(registry.has<Bullet>(event.entityA)) { bullet = event.entityA; entity = event.entityB; }
                 else if(registry.has<Bullet>(event.entityB)) { bullet = event.entityB; entity = event.entityA; }
@@ -285,6 +332,10 @@ public:
                 if(registry.valid(bullet) && !registry.has<entt::tag<"player"_hs>>(entity)) {
                     registry.destroy(bullet);
                     registry.destroy(entity);
+                } else if(registry.has<entt::tag<"player"_hs>>(entity) && !registry.valid(bullet)) {
+                    Transform& transform = registry.get<Transform>(event.entityA);
+                    Physics& physics = registry.get<Physics>(event.entityA);
+                    _dispatcher.trigger<CreateParticlesEvent>(10, event.contactPoint, 1.0f, 2.0f, 1.0f, physics.physicsBody->getVelocity().length(), Color4F::YELLOW);
                 }
 
             }
@@ -298,7 +349,124 @@ public:
     }
 
 private:
+    entt::dispatcher& _dispatcher;
     vector<CollisionBeginEvent> _collisionEvents;
+};
+
+class ParticleControlSystem : public ISystem {
+public:
+    ParticleControlSystem(entt::registry& registry, entt::dispatcher& dispatcher) {
+        registry.on_construct<Meteorite>().connect<&ParticleControlSystem::onMeteoriteConstructed>(this);
+        registry.on_destroy<Meteorite>().connect<&ParticleControlSystem::onMeteoriteDestroyed>(this);
+
+        dispatcher.sink<CreateParticlesEvent>().connect<&ParticleControlSystem::onCreateParticlesEvent>(*this);
+    }
+
+    virtual void update(entt::registry& registry, float delta) {
+        vector<entt::entity> expiredParticles;
+
+        registry.view<DrawableShape, Particle>().each([&](auto particle, DrawableShape& drawable, Particle& p) {
+            p.currentTime += delta;
+            drawable.fillColor.a = 1.0f - p.currentTime / p.livingTime;
+            drawable.borderColor.a = 1.0f - p.currentTime / p.livingTime;
+
+            if(p.currentTime >= p.livingTime) {
+                expiredParticles.push_back(particle);
+            }
+        });
+
+       for(auto particle: expiredParticles) {
+            registry.destroy(particle);
+       }
+
+       for(auto& event : _receivedEvents) {
+            createParticles(registry, event);
+       }
+
+       _receivedEvents.clear();
+    }
+
+    void onMeteoriteConstructed(entt::registry& registry, entt::entity meteorite) {
+        Transform& transform = registry.get<Transform>(meteorite);
+        Physics& physics = registry.get<Physics>(meteorite);
+
+        createParticles(registry, 20, transform.position, 1.0f, 5.0f, 5.0f, 40, Color4F::BLUE);
+    }
+
+    void onMeteoriteDestroyed(entt::registry& registry, entt::entity meteorite) {
+        //Transform& transform = registry.get<Transform>(meteorite);
+
+        //createParticles(registry, 10 , transform.position, 1.0f, 5.0f, 5.0f, 40, Color4F::RED);
+    }
+
+    void onCreateParticlesEvent(const CreateParticlesEvent& event) {
+        _receivedEvents.push_back(event);
+    }
+private:
+    void createParticles(entt::registry& registry, int count, Vec2 position, float minSize, float maxSize, float livingTime, float maxSpeed, Color4F color) {
+        for(int i = 0;i < count; ++i) {
+            entt::entity particle = registry.create();
+
+            float time = random(0.0f, livingTime);
+            float angle = random(0.0, 2.0 * M_PI);
+            float speed = random(0.0f, maxSpeed);
+            float particleSize = random(minSize, maxSize);
+
+            vector<Vec2> particleVerticies = createRectangle(Size(particleSize, particleSize));
+
+            PhysicsBody* particleBody = PhysicsBody::createPolygon(particleVerticies.data(), particleVerticies.size(), PhysicsMaterial(1.0f, 0.5f, 0.0f), Vec2::ZERO);
+            particleBody->setTag(int(particle));
+            particleBody->setGravityEnable(false);
+            particleBody->setVelocity(Vec2(cos(angle) * speed, sin(angle) * speed));
+
+            registry.assign<DrawableShape>(particle, particleVerticies, color, color);
+            registry.assign<Transform>(particle, position, 1.0f, 0.0f);
+            registry.assign<Physics>(particle, particleBody);
+            registry.assign<Particle>(particle, time);
+        }
+    }
+
+    void createParticles(entt::registry& registry, const CreateParticlesEvent& event) {
+        createParticles(registry, event.particlesAmount,
+                        event.initialPosition, event.minimalSize,
+                        event.maximalSize, event.maximalLivingTime,
+                        event.maximalSpeed, event.color);
+    }
+
+    vector<CreateParticlesEvent> _receivedEvents;
+};
+
+class HUDSystem : public ISystem {
+public:
+    HUDSystem(Node* scene) {
+        _visibleSize = Director::getInstance()->getVisibleSize();
+
+        _ammoLabel = Label::createWithTTF("/", "fonts/arial.ttf", 26);
+        _scoreLabel = Label::createWithTTF(":", "fonts/arial.ttf", 26);
+
+        _ammoLabel->setAnchorPoint(Vec2::ANCHOR_TOP_LEFT);
+        _ammoLabel->setPosition(Vec2(0, _visibleSize.height));
+
+        _scoreLabel->setAnchorPoint(Vec2::ANCHOR_MIDDLE_TOP);
+        _scoreLabel->setPosition(Vec2(0.5 * _visibleSize.width, _visibleSize.height));
+
+        scene->addChild(_ammoLabel);
+        scene->addChild(_scoreLabel);
+    }
+
+    virtual void update(entt::registry& registry, float delta) {
+        auto view = registry.view<Ship, entt::tag<"player"_hs>>();
+        view.each([&](auto entity, Ship& shipComponent, auto passComponent) {
+            _ammoLabel->setString(StringUtils::format("AMMO %d/%d", shipComponent.ammo, shipComponent.maxAmmo));
+            _scoreLabel->setString(StringUtils::format("SCORE 0"));
+        });
+    }
+
+private:
+    Size _visibleSize;
+
+    Label* _ammoLabel;
+    Label* _scoreLabel;
 };
 
 class InputHandler {
@@ -337,7 +505,10 @@ public:
 
     bool onCollisionBegin(PhysicsContact& contact) {
         _dispatcher.trigger<CollisionBeginEvent>(entt::registry::entity_type(contact.getShapeA()->getBody()->getTag()),
-                                                 entt::registry::entity_type(contact.getShapeB()->getBody()->getTag()));
+                                                 entt::registry::entity_type(contact.getShapeB()->getBody()->getTag()),
+                                                 contact.getContactData()->points[0]);
+
+
         return true;
     }
 

@@ -31,9 +31,12 @@ public:
         _application->addSystem(std::make_shared<PhysicsSystem>());
         _application->addSystem(std::make_shared<BulletCollisionSystem>(_application->getDispatcher()));
         _application->addSystem(std::make_shared<PlayerControllSystem>("deprecated"_hs, _application->getDispatcher()));
+        _application->addSystem(std::make_shared<HUDSystem>(this));
+        _application->addSystem(std::make_shared<ParticleControlSystem>(_application->getRegistry(), _application->getDispatcher()));
 
         _application->getRegistry().on_construct<Physics>().connect<&MainScene::physicalComponentConnectionListener>(this);
         _application->getRegistry().on_destroy<Physics>().connect<&MainScene::physicalComponentDisconnectionListener>(this);
+        _application->getRegistry().on_destroy<Bullet>().connect<&MainScene::bulletComponentDestruction>(this);
 
         _inputHandler = std::make_shared<InputHandler>(this, _eventDispatcher, _application->getDispatcher());
         _collisionHandler = std::make_shared<CollisionHandler>(this, _eventDispatcher, _application->getDispatcher());
@@ -89,6 +92,14 @@ private:
     void physicalComponentDisconnectionListener(entt::registry& registry, entt::entity entity) {
         Physics& physicsComponent = registry.get<Physics>(entity);
         physicsComponent.physicsBody->getOwner()->removeFromParentAndCleanup(true);
+    }
+
+    void bulletComponentDestruction(entt::registry& registry, entt::entity entity) {
+        Bullet& bulletComponent = registry.get<Bullet>(entity);
+        if(registry.valid(bulletComponent.owner)) {
+            Ship& shipComponent = registry.get<Ship>(bulletComponent.owner);
+            shipComponent.ammo = std::min(shipComponent.ammo + 1, shipComponent.maxAmmo);
+        }
     }
 
     std::shared_ptr<BaseApplication> _application;

@@ -28,7 +28,7 @@ struct DrawableShape {
 };
 
 struct Ship {
-    explicit Ship(float shipSpeed, int mxHealth, int mxAmmo): speed(shipSpeed), maxHealth(mxHealth), maxAmmo(mxAmmo), ammo(mxAmmo) { }
+    explicit Ship(float shipSpeed, int mxHealth, int mxAmmo): speed(shipSpeed), maxHealth(mxHealth), maxAmmo(mxAmmo), ammo(mxAmmo), score(0) { }
 
     float speed;
 
@@ -37,10 +37,14 @@ struct Ship {
 
     int maxAmmo;
     int ammo;
+
+    int score;
 };
 
 struct Bullet {
+    Bullet(entt::entity bulletOwner): owner(bulletOwner) { }
 
+    entt::entity owner;
 };
 
 struct Physics {
@@ -48,10 +52,18 @@ struct Physics {
     PhysicsBody* physicsBody;
 };
 
+struct Particle {
+    explicit Particle(float particleLivingTime): livingTime(particleLivingTime), currentTime(0.0f) { }
+
+    float livingTime;
+    float currentTime;
+};
+
 //struct Magnet
-//struct Particle
 
 //TODO: USING TAGS
-struct Meteorite {};
+struct Meteorite {
+    Meteorite() { }
+};
 
 #endif // COMPONENTS_H_INCLUDED
