@@ -54,8 +54,6 @@ public:
     }
 
     void update(entt::registry& registry, float delta) {
-        _renderer->clear();
-
         auto view = registry.view<DrawableShape, Transform>();
         for(auto entity : view) {
             DrawableShape& drawableShape = view.get<DrawableShape>(entity);
@@ -70,9 +68,36 @@ public:
 
             _renderer->drawPolygon(transformedVertecies.data(), transformedVertecies.size(),
                                    drawableShape.fillColor, 1.0f, drawableShape.borderColor);
+            _renderer->drawPoint(transform.position, 3.0f, Color4F::RED);
+            _renderer->drawRect(transform.position - Vec2(drawableShape.shapeRect.size.width * 1.0f,drawableShape.shapeRect.size.width * 1.0f), transform.position + Vec2(drawableShape.shapeRect.size.width *1.0f ,drawableShape.shapeRect.size.height * 1.0f), Color4F::GREEN);
         }
     }
 
+private:
+    DrawNode* _renderer;
+};
+
+class HealthBarDrawingSystem: public ISystem {
+public:
+    HealthBarDrawingSystem(DrawNode* renderer) {
+        _renderer = renderer;
+    }
+
+    virtual void update(entt::registry& registry, float delta) {
+        auto view = registry.view<DrawableShape, Transform, Mortal>();
+        view.each([&](DrawableShape& shape, Transform& transform, Mortal& mortal) {
+            if(mortal.health > 0) {
+                Vec2 minMidPoint = transform.position - Vec2(0, shape.shapeRect.size.height / 2) * transform.scale;
+                Vec2 hpCellVertPos = minMidPoint - mortal.health / 2 * Vec2(10, 0);
+                for(int i = 0;i < mortal.health; ++i) {
+                    _renderer->drawTriangle(hpCellVertPos + Vec2(10, 0) * i,
+                                            (hpCellVertPos + Vec2(-4, -4)) + Vec2(10, 0) * i,
+                                            (hpCellVertPos + Vec2(4, -4)) + Vec2(10, 0) * i,
+                                            Color4F::RED);
+                }
+            }
+        });
+    }
 private:
     DrawNode* _renderer;
 };
@@ -95,7 +120,7 @@ public:
             if(view.size() < _maximalCount) {
                 auto newMeteorite = registry.create();
 
-                float scale = random(0.5f, 1.5f);
+                float scale = random(1.0f, 1.0f);
 
                 vector<Vec2> vertecies;
                 for(float fi = 0.0f; fi < 360.0f; fi += 30.0f) {
@@ -103,6 +128,7 @@ public:
                                                      std::sin(toRad(fi)) + random(0.0f, 0.25f)));
                 }
 
+                registry.assign<Mortal>(newMeteorite, random(3, 5));
                 registry.assign<DrawableShape>(newMeteorite, vertecies, Color4F::BLACK, Color4F::WHITE);
                 registry.assign<Transform>(newMeteorite,
                                            randomPoint(Director::getInstance()->getVisibleSize()),
@@ -330,8 +356,13 @@ public:
                 else if(registry.has<Bullet>(event.entityB)) { bullet = event.entityB; entity = event.entityA; }
 
                 if(registry.valid(bullet) && !registry.has<entt::tag<"player"_hs>>(entity)) {
+
+                    Physics& bulletPhysicsComponent = registry.get<Physics>(bullet);
+                    _dispatcher.trigger<CreateParticlesEvent>(10, event.contactPoint, 1.0f, 2.0f, 1.5f, bulletPhysicsComponent.physicsBody->getVelocity().length(), Color4F::RED);
+
                     registry.destroy(bullet);
                     registry.destroy(entity);
+
                 } else if(registry.has<entt::tag<"player"_hs>>(entity) && !registry.valid(bullet)) {
                     Transform& transform = registry.get<Transform>(event.entityA);
                     Physics& physics = registry.get<Physics>(event.entityA);
@@ -394,9 +425,9 @@ public:
     }
 
     void onMeteoriteDestroyed(entt::registry& registry, entt::entity meteorite) {
-        //Transform& transform = registry.get<Transform>(meteorite);
+//        Transform& transform = registry.get<Transform>(meteorite);
 
-        //createParticles(registry, 10 , transform.position, 1.0f, 5.0f, 5.0f, 40, Color4F::RED);
+//        createParticles(registry, 10 , transform.position, 1.0f, 5.0f, 5.0f, 40, Color4F::RED);
     }
 
     void onCreateParticlesEvent(const CreateParticlesEvent& event) {

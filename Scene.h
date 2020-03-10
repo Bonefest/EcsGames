@@ -21,12 +21,13 @@ public:
     bool init() {
         if(!cocos2d::Scene::initWithPhysics()) return false;
 
-        DrawNode* drawer = DrawNode::create();
-        addChild(drawer);
+        _renderer = DrawNode::create();
+        addChild(_renderer);
 
         _application = std::make_shared<BaseApplication>();
 
-        _application->addSystem(std::make_shared<DrawingSystem>(drawer));
+        _application->addSystem(std::make_shared<DrawingSystem>(_renderer));
+        _application->addSystem(std::make_shared<HealthBarDrawingSystem>(_renderer));
         _application->addSystem(std::make_shared<MeteorSpawnSystem>(20, 2.0f));
         _application->addSystem(std::make_shared<PhysicsSystem>());
         _application->addSystem(std::make_shared<BulletCollisionSystem>(_application->getDispatcher()));
@@ -51,6 +52,7 @@ public:
     }
 
     void update(float delta) {
+        _renderer->clear();
         _application->update(delta);
     }
 
@@ -105,6 +107,8 @@ private:
     std::shared_ptr<BaseApplication> _application;
     std::shared_ptr<InputHandler> _inputHandler;
     std::shared_ptr<CollisionHandler> _collisionHandler;
+
+    DrawNode* _renderer;
 };
 
 #endif // __SCENE_H_
