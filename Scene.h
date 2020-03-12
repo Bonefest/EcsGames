@@ -72,6 +72,7 @@ private:
         verticies.push_back(Vec2(-5.0f,-5.0f));
 
         registry.assign<DrawableShape>(player, verticies, Color4F::BLACK, Color4F::WHITE);
+        registry.assign<Mortal>(player, 10);
         registry.assign<Ship>(player, 200.0f, 5, 5);
 
         PhysicsBody* playerBody = cocos2d::PhysicsBody::createPolygon(verticies.data(), verticies.size(), PhysicsMaterial(1.0f, 0.0f, 1.0f), Vec2::ZERO);

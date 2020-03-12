@@ -22,9 +22,12 @@ struct DrawableShape {
                                                                                       fillColor(fllColor),
                                                                                       borderColor(brderColor)
     {
-        float minx, miny;
-        float maxx, maxy;
-        minx = maxx = vrtecies[0].x, miny = maxy = vrtecies[0].y;
+        float minx, miny, maxx, maxy;
+        minx = maxx = vrtecies.front().x;
+        miny = maxy = vrtecies.front().y;
+
+
+        float maxSize = 0.0f;
 
         for(Vec2 vec : vrtecies) {
             minx = std::min(minx, vec.x);
@@ -32,13 +35,11 @@ struct DrawableShape {
 
             maxx = std::max(maxx, vec.x);
             maxy = std::max(maxy, vec.y);
-        }
-        log("%f %f %f %f", minx, miny, maxx, maxy);
-        float midx = (maxx + minx) * 0.5f;
-        float midy = (maxy + miny) * 0.5f;
 
-        float size = std::max(maxx - minx, maxy - miny);
-        shapeRect = Rect(midx, midy, size, size);
+            maxSize = std::max(vec.length(), maxSize);
+        }
+
+        shapeRect = Rect(-maxSize, -maxSize , 2.0f * maxSize, 2.0f * maxSize);
     }
     vector<Vec2> vertecies;
 
@@ -75,6 +76,13 @@ struct Bullet {
 struct Physics {
     explicit Physics(PhysicsBody* body): physicsBody(body) { }
     PhysicsBody* physicsBody;
+};
+
+struct Ghost {
+    explicit Ghost(float respTime) : currentTime(0.0f), respawnTime(respTime) { }
+
+    float currentTime;
+    float respawnTime;
 };
 
 struct Particle {

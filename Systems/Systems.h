@@ -18,6 +18,8 @@ using std::vector;
 using std::shared_ptr;
 USING_NS_CC;
 
+const float HP_SIZE = 10.0f;
+
 Vec2 randomPoint(Vec2 maximalPoint) {
     return Vec2(random(0.0f, maximalPoint.x),
                 random(0.0f, maximalPoint.y));
@@ -68,8 +70,9 @@ public:
 
             _renderer->drawPolygon(transformedVertecies.data(), transformedVertecies.size(),
                                    drawableShape.fillColor, 1.0f, drawableShape.borderColor);
-            _renderer->drawPoint(transform.position, 3.0f, Color4F::RED);
-            _renderer->drawRect(transform.position - Vec2(drawableShape.shapeRect.size.width * 1.0f,drawableShape.shapeRect.size.width * 1.0f), transform.position + Vec2(drawableShape.shapeRect.size.width *1.0f ,drawableShape.shapeRect.size.height * 1.0f), Color4F::GREEN);
+            //_renderer->drawPoint(transform.position, 3.0f, Color4F::RED);
+            //_renderer->drawRect(transform.position - Vec2(drawableShape.shapeRect.size.width * 0.5f, drawableShape.shapeRect.size.height * 0.5f),
+            //                    transform.position + Vec2(drawableShape.shapeRect.size.width * 0.5f, drawableShape.shapeRect.size.height * 0.5f) , Color4F::GREEN);
         }
     }
 
@@ -82,18 +85,19 @@ public:
     HealthBarDrawingSystem(DrawNode* renderer) {
         _renderer = renderer;
     }
-
     virtual void update(entt::registry& registry, float delta) {
         auto view = registry.view<DrawableShape, Transform, Mortal>();
         view.each([&](DrawableShape& shape, Transform& transform, Mortal& mortal) {
             if(mortal.health > 0) {
-                Vec2 minMidPoint = transform.position - Vec2(0, shape.shapeRect.size.height / 2) * transform.scale;
-                Vec2 hpCellVertPos = minMidPoint - mortal.health / 2 * Vec2(10, 0);
+                Rect srect = shape.shapeRect;
+                Vec2 minMidPoint = transform.position + Vec2(0.0f, srect.getMinY() * 1.5f) * transform.scale;
+                Vec2 hpCellVertPos = minMidPoint - (float(mortal.health) / 2.0f) * Vec2(HP_SIZE, 0) + Vec2(HP_SIZE * 0.5f, 0);
                 for(int i = 0;i < mortal.health; ++i) {
-                    _renderer->drawTriangle(hpCellVertPos + Vec2(10, 0) * i,
-                                            (hpCellVertPos + Vec2(-4, -4)) + Vec2(10, 0) * i,
-                                            (hpCellVertPos + Vec2(4, -4)) + Vec2(10, 0) * i,
+                    _renderer->drawTriangle(hpCellVertPos - Vec2(HP_SIZE * 0.5f, 0),
+                                            hpCellVertPos + Vec2(HP_SIZE * 0.5f, 0),
+                                            hpCellVertPos - Vec2(0, HP_SIZE * 0.5f),
                                             Color4F::RED);
+                    hpCellVertPos += Vec2(HP_SIZE, 0);
                 }
             }
         });
@@ -118,9 +122,10 @@ public:
             auto view = registry.view<Meteorite>();
 
             if(view.size() < _maximalCount) {
+                Size visibleSize = Director::getInstance()->getVisibleSize();
                 auto newMeteorite = registry.create();
 
-                float scale = random(1.0f, 1.0f);
+                float scale = random(0.5f, 1.5f);
 
                 vector<Vec2> vertecies;
                 for(float fi = 0.0f; fi < 360.0f; fi += 30.0f) {
@@ -131,7 +136,7 @@ public:
                 registry.assign<Mortal>(newMeteorite, random(3, 5));
                 registry.assign<DrawableShape>(newMeteorite, vertecies, Color4F::BLACK, Color4F::WHITE);
                 registry.assign<Transform>(newMeteorite,
-                                           randomPoint(Director::getInstance()->getVisibleSize()),
+                                           Vec2(random<float>(-visibleSize.width, -64.0f), random<float>(0, visibleSize.height)),
                                            scale, 0.0f);
 
                 std::transform(vertecies.begin(), vertecies.end(), vertecies.begin(), [scale](Vec2& position){ return position * scale; });
@@ -216,7 +221,7 @@ private:
 class PlayerControllSystem : public ISystem {
 public:
     //vector<pair<hashed_string, configuration>> playersData;
-    explicit PlayerControllSystem(entt::hashed_string playerTag, entt::dispatcher& dispatcher /*, KeyConfig keyConfig */) {
+    explicit PlayerControllSystem(entt::hashed_string playerTag, entt::dispatcher& dispatcher /*, KeyConfig keyConfig */): _dispatcher(dispatcher) {
         _playerTag = playerTag;
 
         dispatcher.sink<KeyPressedEvent>().connect<&PlayerControllSystem::onKeyPressed>(*this);
@@ -239,6 +244,32 @@ public:
                 Transform& transformComponent = registry.get<Transform>(player);
                 Physics& physicsComponent = registry.get<Physics>(player);
                 Ship& shipComponent = registry.get<Ship>(player);
+                Mortal& mortalComponent = registry.get<Mortal>(player);
+
+                if(registry.has<Ghost>(player)) {
+                    Ghost& ghostComponent = registry.get<Ghost>(player);
+                    ghostComponent.currentTime += delta;
+                    if(ghostComponent.currentTime >= ghostComponent.respawnTime) {
+                        DrawableShape& shapeComponent = registry.get<DrawableShape>(player);
+                        shapeComponent.borderColor.a = 1.0f;
+
+                        transformComponent.position = Vec2(Director::getInstance()->getVisibleSize() * 0.5f);
+                        physicsComponent.physicsBody->setCollisionBitmask(0xFFFFFFFF);
+                        mortalComponent.health = 10;
+
+                        registry.remove<Ghost>(player);
+
+
+                        _dispatcher.trigger<CreateParticlesEvent>(50, transformComponent.position, 1.0f, 2.0f, 1.0f, 200.0f, Color4F::WHITE);
+                    }
+                }
+
+                if(mortalComponent.health <= 0 && !registry.has<Ghost>(player)) {
+                    DrawableShape& shapeComponent = registry.get<DrawableShape>(player);
+                    shapeComponent.borderColor.a = 0.25f;
+                    physicsComponent.physicsBody->setCollisionBitmask(0);
+                    registry.assign<Ghost>(player, 10.0f);
+                }
 
                 Vec2 bodyVelocity = physicsComponent.physicsBody->getVelocity();
                 Vec2 velocity = Vec2::ZERO;
@@ -259,16 +290,11 @@ public:
 
                 physicsComponent.physicsBody->setVelocity(velocity +  bodyVelocity + opposite);
 
-
-                if(_pressedKeys[EventKeyboard::KeyCode::KEY_SHIFT]) {
-                    physicsComponent.physicsBody->setVelocityLimit(shipComponent.speed * 2);
-                } else {
-                    physicsComponent.physicsBody->setVelocityLimit(shipComponent.speed);
-
-                }
-                if(_pressedKeys[EventKeyboard::KeyCode::KEY_SPACE]){
-                    _pressedKeys[EventKeyboard::KeyCode::KEY_SPACE] = false;
-                    onPlayerShooted(player, registry);
+                if(!registry.has<Ghost>(player)) {
+                    if(_pressedKeys[EventKeyboard::KeyCode::KEY_SPACE]){
+                        _pressedKeys[EventKeyboard::KeyCode::KEY_SPACE] = false;
+                        onPlayerShooted(player, registry);
+                    }
                 }
             }
         }
@@ -320,14 +346,16 @@ private:
     }
 
     void onAcceleration(entt::registry& registry, bool pressed) {
-        registry.view<Ship, Physics, DrawableShape, entt::tag<"player"_hs>>().each([&](auto player, Ship& ship, Physics& physics, DrawableShape& drawable, auto passComponent) {
+        registry.view<Ship, Physics, Transform, DrawableShape, entt::tag<"player"_hs>>().each([&](auto player, Ship& ship, Physics& physics, Transform& transform, DrawableShape& drawable, auto passComponent) {
             if(pressed) {
                 ship.speed *= 2;
-                drawable.borderColor = Color4F(1.0f, 1.0f, 1.0f, 0.5f);
+                drawable.borderColor.a = 0.5f;
             }
             else {
                 ship.speed /= 2;
-                drawable.borderColor = Color4F::WHITE;
+                drawable.borderColor.a = 1.0f;
+
+                _dispatcher.trigger<CreateParticlesEvent>(20, transform.position, 1.0f, 2.0f, 1.0f, 100.0f, Color4F::WHITE);
             }
 
             physics.physicsBody->setVelocityLimit(ship.speed);
@@ -335,6 +363,7 @@ private:
     }
 
     entt::hashed_string _playerTag;
+    entt::dispatcher& _dispatcher;
     map<EventKeyboard::KeyCode, bool> _pressedKeys;
 
     vector<KeyPressedEvent> _receivedPressedKeys;
@@ -351,28 +380,54 @@ public:
         for(CollisionBeginEvent event : _collisionEvents) {
             if(registry.valid(event.entityA) && registry.valid(event.entityB)) {
 
-                entt::entity bullet = entt::null, entity;
-                if(registry.has<Bullet>(event.entityA)) { bullet = event.entityA; entity = event.entityB; }
-                else if(registry.has<Bullet>(event.entityB)) { bullet = event.entityB; entity = event.entityA; }
+                entt::entity required, another;
+                if(registry.has<Bullet>(event.entityA)) { required = event.entityA; another = event.entityB; }
+                else if(registry.has<Bullet>(event.entityB)) { required = event.entityB; another = event.entityA; }
 
-                if(registry.valid(bullet) && !registry.has<entt::tag<"player"_hs>>(entity)) {
+                if(registry.valid(required) && !registry.has<entt::tag<"player"_hs>>(another)) {
+                    onBulletCollision(registry, required, another, event);
+                    continue;
+                }
 
-                    Physics& bulletPhysicsComponent = registry.get<Physics>(bullet);
-                    _dispatcher.trigger<CreateParticlesEvent>(10, event.contactPoint, 1.0f, 2.0f, 1.5f, bulletPhysicsComponent.physicsBody->getVelocity().length(), Color4F::RED);
+                if(registry.has<entt::tag<"player"_hs>>(event.entityA)) { required = event.entityA; another = event.entityB; }
+                else if(registry.has<entt::tag<"player"_hs>>(event.entityB)) { required = event.entityB; another = event.entityA; }
 
-                    registry.destroy(bullet);
-                    registry.destroy(entity);
-
-                } else if(registry.has<entt::tag<"player"_hs>>(entity) && !registry.valid(bullet)) {
-                    Transform& transform = registry.get<Transform>(event.entityA);
-                    Physics& physics = registry.get<Physics>(event.entityA);
-                    _dispatcher.trigger<CreateParticlesEvent>(10, event.contactPoint, 1.0f, 2.0f, 1.0f, physics.physicsBody->getVelocity().length(), Color4F::YELLOW);
+                if(registry.valid(required) && !registry.has<Bullet>(another)) {
+                    onPlayerCollision(registry, required, another, event);
                 }
 
             }
         }
 
         _collisionEvents.clear();
+    }
+
+    void onBulletCollision(entt::registry& registry, entt::entity bullet, entt::entity entity, CollisionBeginEvent event) {
+        Physics& bulletPhysicsComponent = registry.get<Physics>(bullet);
+        if(registry.has<Mortal>(entity)) {
+            Mortal& mortalComponent = registry.get<Mortal>(entity);
+            mortalComponent.health--;
+
+            if(mortalComponent.health <= 0) {
+                _dispatcher.trigger<CreateParticlesEvent>(10, event.contactPoint, 1.0f, 2.0f, 1.5f, bulletPhysicsComponent.physicsBody->getVelocity().length(), Color4F::RED);
+                registry.destroy(entity);
+            } else {
+                _dispatcher.trigger<CreateParticlesEvent>(10, event.contactPoint, 1.0f, 1.5f, 0.8f, 40.0f, Color4F::WHITE);
+            }
+        }
+
+        registry.destroy(bullet);
+    }
+    void onPlayerCollision(entt::registry& registry, entt::entity player, entt::entity entity, CollisionBeginEvent event) {
+        Transform& transform = registry.get<Transform>(player);
+        Physics& physics = registry.get<Physics>(player);
+        Mortal& mortal = registry.get<Mortal>(player);
+
+        Physics& entityPhysics = registry.get<Physics>(entity);
+        if(physics.physicsBody->getCollisionBitmask() & entityPhysics.physicsBody->getCollisionBitmask()) {
+            mortal.health--;
+            _dispatcher.trigger<CreateParticlesEvent>(10, event.contactPoint, 1.0f, 2.0f, 1.0f, physics.physicsBody->getVelocity().length(), Color4F::YELLOW);
+        }
     }
 
     void onCollisionBegin(const CollisionBeginEvent& event) {
