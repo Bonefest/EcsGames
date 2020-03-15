@@ -44,7 +44,6 @@ public:
 
         initPlayer();
 
-
         //getPhysicsWorld()->setDebugDrawMask(0xFFFF);
 
         scheduleUpdate();

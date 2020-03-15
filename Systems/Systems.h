@@ -229,6 +229,8 @@ public:
     }
 
     virtual void update(entt::registry& registry, float delta) {
+
+
         auto view = registry.view<entt::tag<"player"_hs>, Transform, Physics, Ship>();
 
         for(KeyPressedEvent& event : _receivedPressedKeys) {
@@ -296,6 +298,8 @@ public:
                         onPlayerShooted(player, registry);
                     }
                 }
+
+                updateCamera(transformComponent.position);
             }
         }
 
@@ -360,6 +364,10 @@ private:
 
             physics.physicsBody->setVelocityLimit(ship.speed);
         });
+    }
+
+    void updateCamera(const Vec2& playerPosition) {
+        Director::getInstance()->getRunningScene()->getDefaultCamera()->setPosition(playerPosition);
     }
 
     entt::hashed_string _playerTag;
@@ -527,15 +535,22 @@ public:
     HUDSystem(Node* scene) {
         _visibleSize = Director::getInstance()->getVisibleSize();
 
+        _HUDCamera = cocos2d::Camera::create();
+        _HUDCamera->setPosition(Vec2(_visibleSize) * 0.5f);
+        _HUDCamera->setCameraFlag(CameraFlag::USER1);
+
         _ammoLabel = Label::createWithTTF("/", "fonts/arial.ttf", 26);
         _scoreLabel = Label::createWithTTF(":", "fonts/arial.ttf", 26);
 
         _ammoLabel->setAnchorPoint(Vec2::ANCHOR_TOP_LEFT);
         _ammoLabel->setPosition(Vec2(0, _visibleSize.height));
+        _ammoLabel->setCameraMask((unsigned short)CameraFlag::USER1, true);
 
         _scoreLabel->setAnchorPoint(Vec2::ANCHOR_MIDDLE_TOP);
         _scoreLabel->setPosition(Vec2(0.5 * _visibleSize.width, _visibleSize.height));
+        _scoreLabel->setCameraMask((unsigned short)CameraFlag::USER1, true);
 
+        scene->addChild(_HUDCamera);
         scene->addChild(_ammoLabel);
         scene->addChild(_scoreLabel);
     }
@@ -553,6 +568,8 @@ private:
 
     Label* _ammoLabel;
     Label* _scoreLabel;
+
+    Camera* _HUDCamera;
 };
 
 class InputHandler {
