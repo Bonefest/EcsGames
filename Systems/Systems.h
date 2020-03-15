@@ -5,6 +5,7 @@
 #include "Dependencies/entt.hpp"
 #include "../Events/Events.h"
 #include "../Components/Components.h"
+#include "Minimap.h"
 
 #include <memory>
 #include <vector>
@@ -149,6 +150,7 @@ public:
                 registry.assign<Physics>(newMeteorite, body);
 
                 registry.assign<Meteorite>(newMeteorite);
+                registry.assign<MinimapTarget>(newMeteorite, Shape::CIRCLE, Color4F::RED);
 
 
 
@@ -344,6 +346,7 @@ private:
             registry.assign<DrawableShape>(bullet, bulletVerticies, Color4F::WHITE, Color4F::WHITE);
             registry.assign<Transform>(bullet, transformComponent.position + Vec2(cos(-transformComponent.angle), sin(-transformComponent.angle)), 1.0f, transformComponent.angle);
             registry.assign<Physics>(bullet, bulletBody);
+            registry.assign<MinimapTarget>(bullet, Shape::CIRCLE, Color4F::WHITE);
 
             shipComponent.ammo--;
         }
@@ -553,9 +556,16 @@ public:
         scene->addChild(_HUDCamera);
         scene->addChild(_ammoLabel);
         scene->addChild(_scoreLabel);
+
+        _minimap = std::make_shared<Minimap>(scene, Size(128, 90), Color4F::BLACK, Color4F::BLACK, 1.0f);
+        _minimap->setBorderRect(Rect(-64, -64, _visibleSize.width + 64, _visibleSize.height + 64));
+        _minimap->setPosition(Vec2(_visibleSize.width - 128, _visibleSize.height - 90));
+        _minimap->getRenderer()->setCameraMask((unsigned short)CameraFlag::USER1, true);
     }
 
     virtual void update(entt::registry& registry, float delta) {
+        _minimap->draw(registry, delta);
+
         auto view = registry.view<Ship, entt::tag<"player"_hs>>();
         view.each([&](auto entity, Ship& shipComponent, auto passComponent) {
             _ammoLabel->setString(StringUtils::format("AMMO %d/%d", shipComponent.ammo, shipComponent.maxAmmo));
@@ -570,6 +580,8 @@ private:
     Label* _scoreLabel;
 
     Camera* _HUDCamera;
+
+    std::shared_ptr<Minimap> _minimap;
 };
 
 class InputHandler {

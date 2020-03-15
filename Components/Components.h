@@ -92,6 +92,17 @@ struct Particle {
     float currentTime;
 };
 
+enum Shape {
+    SQUARE, CIRCLE, TRIANGLE
+};
+
+struct MinimapTarget {
+    explicit MinimapTarget(Shape shapeType, Color4F targetColor) : shape(shapeType), color(targetColor) { }
+
+    Shape shape;
+    Color4F color;
+};
+
 //struct Magnet
 
 //TODO: USING TAGS
