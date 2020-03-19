@@ -19,7 +19,21 @@ using std::vector;
 using std::shared_ptr;
 USING_NS_CC;
 
+Rect worldRect(-2048, -2048, 4096, 4096);
+
 const float HP_SIZE = 10.0f;
+
+Rect getVisibleRect() {
+    Size visibleSize = Director::getInstance()->getVisibleSize();
+    Vec2 cameraPosition = Director::getInstance()->getRunningScene()->getDefaultCamera()->getPosition();
+
+    Rect visibleRect(cameraPosition.x - visibleSize.width * 0.5f,
+                     cameraPosition.y - visibleSize.height * 0.5f,
+                     visibleSize.width,
+                     visibleSize.height);
+
+    return visibleRect;
+}
 
 Vec2 randomPoint(Vec2 maximalPoint) {
     return Vec2(random(0.0f, maximalPoint.x),
@@ -71,9 +85,7 @@ public:
 
             _renderer->drawPolygon(transformedVertecies.data(), transformedVertecies.size(),
                                    drawableShape.fillColor, 1.0f, drawableShape.borderColor);
-            //_renderer->drawPoint(transform.position, 3.0f, Color4F::RED);
-            //_renderer->drawRect(transform.position - Vec2(drawableShape.shapeRect.size.width * 0.5f, drawableShape.shapeRect.size.height * 0.5f),
-            //                    transform.position + Vec2(drawableShape.shapeRect.size.width * 0.5f, drawableShape.shapeRect.size.height * 0.5f) , Color4F::GREEN);
+//                    transform.position + Vec2(drawableShape.shapeRect.size.width * 0.5f, drawableShape.shapeRect.size.height * 0.5f) , Color4F::GREEN);
         }
     }
 
@@ -136,9 +148,7 @@ public:
 
                 registry.assign<Mortal>(newMeteorite, random(3, 5));
                 registry.assign<DrawableShape>(newMeteorite, vertecies, Color4F::BLACK, Color4F::WHITE);
-                registry.assign<Transform>(newMeteorite,
-                                           Vec2(random<float>(-visibleSize.width, -64.0f), random<float>(0, visibleSize.height)),
-                                           scale, 0.0f);
+                registry.assign<Transform>(newMeteorite, generatePosition(), scale, 0.0f);
 
                 std::transform(vertecies.begin(), vertecies.end(), vertecies.begin(), [scale](Vec2& position){ return position * scale; });
 
@@ -160,6 +170,17 @@ public:
     }
 
 private:
+    Vec2 generatePosition() {
+        Rect visibleRect = getVisibleRect();
+        Vec2 position = visibleRect.origin;
+        while(visibleRect.containsPoint(position)) {
+            position.x = random(worldRect.getMinX(), worldRect.getMaxX());
+            position.y = random(worldRect.getMinY(), worldRect.getMaxY());
+        }
+
+        return position;
+    }
+
     int _maximalCount;
 
     float _spawnTime;
@@ -174,46 +195,48 @@ public:
     }
 
     void update(entt::registry& registry, float delta) {
+        Rect visibleRect = getVisibleRect();
+
         auto view = registry.view<Physics, Transform>();
         view.each([&](auto entity, Physics& physComponent, Transform& transformComponent) {
             transformComponent.angle += physComponent.physicsBody->getAngularVelocity() * delta;
             transformComponent.position += physComponent.physicsBody->getVelocity() * delta;
-            if(transformComponent.position.x < -64.0f)
-                transformComponent.position.x = _visibleSize.width + 64.0f;
-            else if(transformComponent.position.x > _visibleSize.width + 64.0f)
-                transformComponent.position.x = -64.0f;
 
-            if(transformComponent.position.y < -64.0f)
-                transformComponent.position.y = _visibleSize.height + 64.0f;
-            else if(transformComponent.position.y > _visibleSize.height + 64.0f)
-                transformComponent.position.y = -64.0f;
+            if(!registry.has<Particle>(entity) && !visibleRect.containsPoint(transformComponent.position)) {
+                //log("%f %f %f %f %f %f", visibleRect.origin.x, visibleRect.origin.y, visibleRect.size.width, visibleRect.size.height, transformComponent.position.x, transformComponent.position.y);
+                //Если тело вне поля зрения и выходит за границы мира - мы берем наименьшую (наибольшую) точку
+                //из двух: границы мира или границы камеры, в зависимости что дальше.
+                if(transformComponent.position.x < worldRect.getMinX())
+                    transformComponent.position.x = std::max(visibleRect.getMaxX(), worldRect.getMaxX());
+                else if(transformComponent.position.x > worldRect.getMaxX())
+                    transformComponent.position.x = std::min(visibleRect.getMinX(), worldRect.getMinX());
 
+                if(transformComponent.position.y < worldRect.getMinY())
+                    transformComponent.position.y = std::max(worldRect.getMaxY(), visibleRect.getMaxY());
+                else if(transformComponent.position.y > worldRect.getMaxY())
+                    transformComponent.position.y = std::min(visibleRect.getMinY(), worldRect.getMinY());
+            } else {
+                Rect extendedVisibleRect(visibleRect.getMinX() - 128,
+                                         visibleRect.getMinY() - 128,
+                                         visibleRect.size.width + 256,
+                                         visibleRect.size.height + 256);
+                Vec2 vecToCenter = transformComponent.position - Vec2(visibleRect.getMidX(), visibleRect.getMidY());
+                if(transformComponent.position.x < -worldRect.size.width - visibleRect.size.width * 0.6f) {
+                    transformComponent.position.x = worldRect.size.width + visibleRect.size.width * 0.5f + vecToCenter.x;
+                } else if(transformComponent.position.x > worldRect.size.width + visibleRect.size.width * 0.6f) {
+                    transformComponent.position.x = -worldRect.size.width - visibleRect.size.width * 0.5f + vecToCenter.x;
+                }
+
+                if(transformComponent.position.y < -worldRect.size.height - visibleRect.size.height * 0.6f) {
+                    transformComponent.position.y = worldRect.size.height + visibleRect.size.height * 0.5f + vecToCenter.y;
+                } else if(transformComponent.position.y > worldRect.size.height + visibleRect.size.height * 0.6f) {
+                    transformComponent.position.y = -worldRect.size.height - visibleRect.size.height * 0.5f + vecToCenter.y;
+                }
+
+
+            }
             physComponent.physicsBody->getOwner()->setPosition(transformComponent.position);
         });
-
-
-        auto shipView = registry.view<Ship>();
-        for(auto ship : shipView) {
-
-            Ship& shipComponent = shipView.get<Ship>(ship);
-
-            vector<entt::entity> outsideBullets;
-
-            auto bulletsView = registry.view<Bullet, Transform>();
-
-            for(auto bullet : bulletsView) {
-                Transform& transform = bulletsView.get<Transform>(bullet);
-
-               if(transform.position.x <= -64.0f || transform.position.x >= _visibleSize.width + 64.0f ||
-                  transform.position.y <= -64.0f || transform.position.y >= _visibleSize.height + 64.0f) {
-                    outsideBullets.push_back(bullet);
-                }
-            }
-
-            for(auto& bullet : outsideBullets) {
-                registry.destroy(bullet);
-            }
-        }
     }
 
 private:
@@ -223,7 +246,7 @@ private:
 class PlayerControllSystem : public ISystem {
 public:
     //vector<pair<hashed_string, configuration>> playersData;
-    explicit PlayerControllSystem(entt::hashed_string playerTag, entt::dispatcher& dispatcher /*, KeyConfig keyConfig */): _dispatcher(dispatcher) {
+    explicit PlayerControllSystem(entt::hashed_string playerTag, entt::dispatcher& dispatcher /*, KeyConfig keyConfig */): _dispatcher(dispatcher), _timer(0.0f) {
         _playerTag = playerTag;
 
         dispatcher.sink<KeyPressedEvent>().connect<&PlayerControllSystem::onKeyPressed>(*this);
@@ -284,6 +307,12 @@ public:
                 if(_pressedKeys[EventKeyboard::KeyCode::KEY_W]) {
                     velocity.x = std::cos(transformComponent.angle) * shipComponent.speed;
                     velocity.y = std::sin(transformComponent.angle) * shipComponent.speed;
+
+                    _timer += delta;
+                    if(_timer > 0.1f) {
+                        _dispatcher.trigger<CreateParticlesEvent>(5, transformComponent.position, 0.5f, 1.0f, 1.0f, 20.0f, Color4F::GRAY);
+                        _timer = 0.0f;
+                    }
                 } else {
                     if(abs(bodyVelocity.x) > 0.001) opposite.x = -bodyVelocity.x / abs(bodyVelocity.x) * delta * shipComponent.speed * 2;
                     if(abs(bodyVelocity.y) > 0.001) opposite.y = -bodyVelocity.y / abs(bodyVelocity.y) * delta * shipComponent.speed * 2;
@@ -379,6 +408,8 @@ private:
 
     vector<KeyPressedEvent> _receivedPressedKeys;
     vector<KeyReleasedEvent> _receivedReleasedKeys;
+
+    float _timer;
 };
 
 class BulletCollisionSystem : public ISystem {
@@ -411,6 +442,20 @@ public:
         }
 
         _collisionEvents.clear();
+
+        vector<entt::entity> _outsideBullets;
+        auto bulletsView = registry.view<Bullet>();
+        bulletsView.each([&](entt::entity bullet, Bullet& bulletComponent) {
+            bulletComponent.livingTime += delta;
+            if(bulletComponent.livingTime > 1.0f) {
+                _outsideBullets.push_back(bullet);
+            }
+        });
+
+        for(auto bullet : _outsideBullets) {
+            registry.destroy(bullet);
+        }
+
     }
 
     void onBulletCollision(entt::registry& registry, entt::entity bullet, entt::entity entity, CollisionBeginEvent event) {
@@ -557,8 +602,8 @@ public:
         scene->addChild(_ammoLabel);
         scene->addChild(_scoreLabel);
 
-        _minimap = std::make_shared<Minimap>(scene, Size(128, 90), Color4F::BLACK, Color4F::BLACK, 1.0f);
-        _minimap->setBorderRect(Rect(-64, -64, _visibleSize.width + 64, _visibleSize.height + 64));
+        _minimap = std::make_shared<Minimap>(scene, Size(128, 90), Color4F(0.0f, 0.0f, 0.0f, 0.5f), Color4F::BLACK, 1.0f);
+        _minimap->setBorderRect(worldRect);
         _minimap->setPosition(Vec2(_visibleSize.width - 128, _visibleSize.height - 90));
         _minimap->getRenderer()->setCameraMask((unsigned short)CameraFlag::USER1, true);
     }

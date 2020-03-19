@@ -60,6 +60,27 @@ public:
                 }
             }
         });
+
+        Size visibleSize = Director::getInstance()->getVisibleSize();
+        Vec2 cameraPosition = Director::getInstance()->getRunningScene()->getDefaultCamera()->getPosition();
+
+        cameraPosition = cameraPosition - _borderRect.origin;
+        cameraPosition.x = (cameraPosition.x / _borderRect.size.width) * _size.width;
+        cameraPosition.y = (cameraPosition.y / _borderRect.size.height) * _size.height;
+
+        visibleSize.width = (visibleSize.width / _borderRect.size.width) * _size.width;
+        visibleSize.height = (visibleSize.height / _borderRect.size.height) * _size.height;
+
+        Vec2 minPos = cameraPosition - Vec2(visibleSize * 0.5f);
+        minPos.x = std::max(minPos.x, 0.0f);
+        minPos.y = std::max(minPos.y, 0.0f);
+
+        Vec2 maxPos = cameraPosition + Vec2(visibleSize * 0.5f);
+        maxPos.x = std::min(maxPos.x, _size.width);
+        maxPos.y = std::min(maxPos.y, _size.height);
+
+        if(minPos.x < maxPos.x && minPos.y < maxPos.y)
+            _minimapRenderer->drawRect(minPos + _position, maxPos + _position, Color4F::YELLOW);
     }
 
 

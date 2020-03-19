@@ -68,9 +68,10 @@ struct Ship {
 };
 
 struct Bullet {
-    Bullet(entt::entity bulletOwner): owner(bulletOwner) { }
+    Bullet(entt::entity bulletOwner): owner(bulletOwner), livingTime(0.0f) { }
 
     entt::entity owner;
+    float livingTime;
 };
 
 struct Physics {
