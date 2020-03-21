@@ -1,7 +1,14 @@
 #ifndef EVENTS_H_INCLUDED
 #define EVENTS_H_INCLUDED
 
+
+#include <string>
+using std::string;
+
 #include "cocos2d.h"
+#include "../common.h"
+
+USING_NS_CC;
 
 //Можно заменить одной структурой, но я решил оставить так для возможности разделения событий на 2 метода
 struct KeyPressedEvent {
@@ -16,36 +23,18 @@ struct KeyReleasedEvent {
     cocos2d::EventKeyboard::KeyCode key;
 };
 
-
-struct CollisionBeginEvent {
-    explicit CollisionBeginEvent(entt::entity enttA, entt::entity enttB, cocos2d::Vec2 physContactPoint): entityA(enttA), entityB(enttB),
-                                                                                                          contactPoint(physContactPoint) { }
-
-    entt::entity entityA;
-    entt::entity entityB;
-
-    cocos2d::Vec2 contactPoint;
+struct GameActionEvent {
+    explicit GameActionEvent(const string& actionDescription, Color4F color): description(actionDescription),
+                                                                              textColor(color) { }
+    string  description;
+    Color4F textColor;
 };
 
-struct CreateParticlesEvent {
-    explicit CreateParticlesEvent(int count,
-                                  cocos2d::Vec2 position,
-                                  float minSize, float maxSize,
-                                  float livingTime,
-                                  float maxSpeed,
-                                  cocos2d::Color4F particleColor) :
+struct UnprocessedKeyActionEvent {
+    explicit UnprocessedKeyActionEvent(EventKeyboard::KeyCode pressedKey, KeyType type): key(pressedKey), keyType(type) { }
 
-                                  particlesAmount(count), initialPosition(position),
-                                  minimalSize(minSize), maximalSize(maxSize),
-                                  maximalLivingTime(livingTime), maximalSpeed(maxSpeed), color(particleColor) { }
-
-    int particlesAmount;
-    cocos2d::Vec2 initialPosition;
-    float minimalSize;
-    float maximalSize;
-    float maximalLivingTime;
-    float maximalSpeed;
-    cocos2d::Color4F color;
+    EventKeyboard::KeyCode key;
+    KeyType keyType;
 };
 
 #endif // EVENTS_H_INCLUDED

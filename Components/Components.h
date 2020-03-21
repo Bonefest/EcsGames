@@ -1,114 +1,88 @@
 #ifndef COMPONENTS_H_INCLUDED
 #define COMPONENTS_H_INCLUDED
 
-#include "Dependencies/entt.hpp"
-
 #include "cocos2d.h"
+#include "../StateSprite.h"
+
+#include <string>
 #include <vector>
 
+using std::string;
 using std::vector;
+
 USING_NS_CC;
 
-struct Transform {
-    explicit Transform(Vec2 pos, float scle, float ang): position(pos), scale(scle), angle(ang) { }
-
-    Vec2 position;
-    float scale;
-    float angle;    //TODO: Округление
+struct Drawable {
+	explicit Drawable(Sprite* psprite): sprite(psprite) { }
+	Sprite* sprite;
 };
 
-struct DrawableShape {
-    explicit DrawableShape(const vector<Vec2>& vrtecies, Color4F fllColor,Color4F brderColor): vertecies(vrtecies),
-                                                                                      fillColor(fllColor),
-                                                                                      borderColor(brderColor)
-    {
-        float minx, miny, maxx, maxy;
-        minx = maxx = vrtecies.front().x;
-        miny = maxy = vrtecies.front().y;
+struct Cell {
+    explicit Cell(int16_t px = 0, int16_t py = 0): x(px), y(py) { }
 
+    uint16_t x;
+    uint16_t y;
 
-        float maxSize = 0.0f;
-
-        for(Vec2 vec : vrtecies) {
-            minx = std::min(minx, vec.x);
-            miny = std::min(miny, vec.y);
-
-            maxx = std::max(maxx, vec.x);
-            maxy = std::max(maxy, vec.y);
-
-            maxSize = std::max(vec.length(), maxSize);
-        }
-
-        shapeRect = Rect(-maxSize, -maxSize , 2.0f * maxSize, 2.0f * maxSize);
-    }
-    vector<Vec2> vertecies;
-
-    Color4F fillColor;
-    Color4F borderColor;
-    Rect shapeRect;
+    string name;
 };
 
-struct Mortal {
-    explicit Mortal(int hp) : health(hp) { }
-    int health;
+struct Creature {
+
+    uint8_t level;
+    uint32_t experience;
+
+    float magic;
+
+    float movementSpeed;
+    float attackSpeed;
+
+    uint16_t strength;
+    uint16_t agillity;
+    uint16_t intellect;
+
+    uint32_t penaltyTime;
 };
 
-struct Ship {
-    explicit Ship(float shipSpeed, int mxHealth, int mxAmmo): speed(shipSpeed), maxHealth(mxHealth), maxAmmo(mxAmmo), ammo(mxAmmo), score(0) { }
+struct Controllable {
 
-    float speed;
-
-    int maxHealth;
-    int health;
-
-    int maxAmmo;
-    int ammo;
-
-    int score;
 };
 
-struct Bullet {
-    Bullet(entt::entity bulletOwner): owner(bulletOwner), livingTime(0.0f) { }
+struct Destroyable {
+    Destroyable(float maximalHP, float regenSpeed, float objDefence): maximalHealth(maximalHP),
+                                                                      currentHealth(maximalHP),
+                                                                      regenerationSpeed(regenSpeed) { }
 
-    entt::entity owner;
-    float livingTime;
+    float maximalHealth;
+    float currentHealth;
+
+    float regenerationSpeed;
+
+    float defense;
 };
 
-struct Physics {
-    explicit Physics(PhysicsBody* body): physicsBody(body) { }
-    PhysicsBody* physicsBody;
+struct Lockable {
+
+    Lockable(uint8_t level): lockLevel(level) { }
+
+    uint8_t lockLevel;
+
 };
 
-struct Ghost {
-    explicit Ghost(float respTime) : currentTime(0.0f), respawnTime(respTime) { }
+struct GameSettings {
+    GameSettings(float size, uint16_t gwidth, uint16_t gheight): cellSize(32.0f),
+                                                                 gridWidth(gwidth),
+                                                                 gridHeight(gheight) { }
 
-    float currentTime;
-    float respawnTime;
+    float cellSize;
+
+    uint16_t gridWidth;
+    uint16_t gridHeight;
+
 };
 
-struct Particle {
-    explicit Particle(float particleLivingTime): livingTime(particleLivingTime), currentTime(0.0f) { }
-
-    float livingTime;
-    float currentTime;
-};
-
-enum Shape {
-    SQUARE, CIRCLE, TRIANGLE
-};
-
-struct MinimapTarget {
-    explicit MinimapTarget(Shape shapeType, Color4F targetColor) : shape(shapeType), color(targetColor) { }
-
-    Shape shape;
-    Color4F color;
-};
-
-//struct Magnet
-
-//TODO: USING TAGS
-struct Meteorite {
-    Meteorite() { }
+struct WorldData {
+    vector<vector<vector<entt::entity>>> objects;
+    vector<vector<entt::entity>> creatures;
 };
 
 #endif // COMPONENTS_H_INCLUDED
