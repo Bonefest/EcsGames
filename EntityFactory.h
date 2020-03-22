@@ -17,7 +17,7 @@ public:
             entitySprite->addState(CLOSED, "DoorClosed");
             _container->addChild(entitySprite);
 
-            _registry.assign<Drawable>(entity, entitySprite);
+            _registry.assign<Drawable>(entity, "DoorOpen");
             _registry.assign<Cell>(entity);
             _registry.assign<Destroyable>(entity, 100.0f, 0.0f, 0.0f);
             _registry.assign<Lockable>(entity, 0);
@@ -27,18 +27,14 @@ public:
             StateSprite* entitySprite = StateSprite::createSprite("Wall.png");
             _container->addChild(entitySprite);
 
-            _registry.assign<Drawable>(entity, entitySprite);
+            _registry.assign<Drawable>(entity, "Wall.png");
             _registry.assign<Destroyable>(entity, 100.0f, 0.0f, 100.0f);
             _registry.assign<Cell>(entity);
         } else if(entityName == "floor") {
             entity = _registry.create();
 
-            StateSprite* entitySprite = StateSprite::createSprite("Floor.png");
-            //Sprite* entitySprite = Sprite::createWithSpriteFrameName("Floor.png");
-            _container->addChild(entitySprite);
-
-            _registry.assign<Drawable>(entity, entitySprite);
-            _registry.assign<Cell>(entity, 2, 2);
+            _registry.assign<Drawable>(entity, "Floor.png");
+            _registry.assign<Cell>(entity);
         }
 
         return entity;

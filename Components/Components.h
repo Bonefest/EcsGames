@@ -11,17 +11,22 @@ using std::string;
 using std::vector;
 
 USING_NS_CC;
-
 struct Drawable {
-	explicit Drawable(Sprite* psprite): sprite(psprite) { }
-	Sprite* sprite;
+	explicit Drawable(const string& frameName): currentFrame(frameName), color(Color4B::WHITE) {
+        //cocos2d::SpriteFrame* frame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName("Floor.png");
+
+	}
+
+    string currentFrame;
+	Color4B color;
 };
 
 struct Cell {
-    explicit Cell(int16_t px = 0, int16_t py = 0): x(px), y(py) { }
+    explicit Cell(int16_t px = 0, int16_t py = 0, uint16_t pz = 0): x(px), y(py), z(pz) { }
 
     uint16_t x;
     uint16_t y;
+    uint16_t z;
 
     string name;
 };

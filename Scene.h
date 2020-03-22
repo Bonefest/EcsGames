@@ -32,6 +32,8 @@ public:
     bool init() {
         if(!Scene::init()) return false;
 
+        //getDefaultCamera()->setDefaultViewport(cocos2d::experimental::Viewport(10, 10, 200, 200));
+
         cocos2d::SpriteFrameCache::getInstance()->addSpriteFramesWithFile("sheet.plist");
 
         _visibleSize = Director::getInstance()->getVisibleSize();
@@ -63,23 +65,26 @@ public:
         entt::registry& registry = _systemManager.getRegistry();
 
         StateSprite* sprite = StateSprite::createSprite("Wall.png");
-        _worldContainer->addChild(sprite);
+        //_worldContainer->addChild(sprite);
 
         entt::entity player = registry.create();
         registry.assign<Controllable>(player);
-        registry.assign<Drawable>(player, sprite);
-        registry.assign<Cell>(player, 0, 0);
+        registry.assign<Drawable>(player, "Wall.png");
+        registry.assign<Cell>(player, 3, 3, 0);
 
         WorldData& wd = registry.ctx<WorldData>();
-        wd.creatures[0][0] = player;
+        wd.creatures[3][3] = player;
 
         scheduleUpdate();
         return true;
     }
-
     void update(float delta) {
+
         _systemManager.update(delta);
+
     }
+
+
 private:
     void initWorldContainer() {
         _worldContainer = cocos2d::ui::ScrollView::create();
@@ -100,7 +105,7 @@ private:
     }
 
     void initSystems() {
-        _systemManager.addSystem(make_shared<GridRenderingSystem>());
+        _systemManager.addSystem(make_shared<GridRenderingSystem>(_worldContainer));
         _systemManager.addSystem(make_shared<HUDSystem>(this, _worldContainer));
         _systemManager.addSystem(make_shared<ControllSystem>(_systemManager.getDispatcher()));
     }
