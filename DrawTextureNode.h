@@ -30,6 +30,8 @@ public:
     }
 
     void drawSpriteFrame(const string& frameName, Vec2 position, int z, Size size, Color4B color) {
+        if(frameName == "") return;
+
         cocos2d::SpriteFrame* frame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(frameName);
 
         cocos2d::PolygonInfo* info = new cocos2d::PolygonInfo();

@@ -64,9 +64,6 @@ public:
         ////////////////////////////////////////////////////////////////////
         entt::registry& registry = _systemManager.getRegistry();
 
-        StateSprite* sprite = StateSprite::createSprite("Wall.png");
-        //_worldContainer->addChild(sprite);
-
         entt::entity player = registry.create();
         registry.assign<Controllable>(player);
         registry.assign<Drawable>(player, "Wall.png");
@@ -79,6 +76,10 @@ public:
                 controllable.discoveredBlocks[i].emplace_back();
             }
         }
+
+        entt::entity testLight = registry.create();
+        registry.assign<Cell>(testLight, 8, 5);
+        registry.assign<Light>(testLight, Color4F(0.99f, 0.0f, 0.0f, 255), 1.0f, 10.0f);
 
         WorldData& wd = registry.ctx<WorldData>();
         wd.creatures[3][3] = player;
@@ -108,7 +109,7 @@ private:
         auto& registry = _systemManager.getRegistry();
 
         registry.set<EntityFactory>(registry, _worldContainer);
-        registry.set<GameSettings>(32.0f, 24, 24);
+        registry.set<GameSettings>(32.0f, 24, 24, Color4B(40, 40, 40, 255));
         registry.set<WorldData>();
     }
 

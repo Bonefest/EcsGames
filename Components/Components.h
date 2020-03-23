@@ -35,11 +35,11 @@ struct Cell {
     string name;
 };
 
-struct PointLight {
-    explicit PointLight(Color4B lightIntensity, float lightPower, uint32_t lightRadius): intensity(lightIntensity),
-                                                                                         power(lightPower),
-                                                                                         radius(lightRadius) { }
-    Color4B intensity;
+struct Light {
+    explicit Light(Color4F lightIntensity, float lightPower, uint32_t lightRadius): intensity(lightIntensity),
+                                                                                    power(lightPower),
+                                                                                    radius(lightRadius) { }
+    Color4F intensity;
     float power;
     uint32_t radius;
 };
@@ -88,9 +88,10 @@ struct Lockable {
 };
 
 struct GameSettings {
-    GameSettings(float size, uint16_t gwidth, uint16_t gheight): cellSize(32.0f),
-                                                                 gridWidth(gwidth),
-                                                                 gridHeight(gheight) { }
+    GameSettings(float size, uint16_t gwidth, uint16_t gheight, Color4B ambColor): cellSize(32.0f),
+                                                                                   gridWidth(gwidth),
+                                                                                   gridHeight(gheight),
+                                                                                   ambientColor(ambColor) { }
 
     float cellSize;
 
