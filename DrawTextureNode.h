@@ -3,16 +3,22 @@
 
 #include "cocos2d.h"
 #include "helper.h"
-#include <list>
+#include <set>
 USING_NS_CC;
 using std::list;
 
 struct DrawElement {
-    int z;
     cocos2d::Texture2D* texture;
     cocos2d::TrianglesCommand* command;
     cocos2d::V3F_C4B_T2F_Quad* quad;
     cocos2d::PolygonInfo* info;
+
+    bool operator<(const DrawElement& element) const {
+        return (texture < element.texture &&
+               command < element.command  &&
+               quad    < element.quad     &&
+               info    < element.info);
+    }
 };
 
 class DrawTextureNode: public Node {
@@ -34,12 +40,15 @@ public:
 
         TrianglesCommand* command = new TrianglesCommand;
 
-        _elements.push_back({z, frame->getTexture(), command, quad, info});
+        _elements.insert(std::pair<int, DrawElement>(z, DrawElement{frame->getTexture(), command, quad, info}));
 
     }
 
     virtual void draw(Renderer* renderer, const Mat4& transform, uint32_t flags) {
-        for(DrawElement& element : _elements) {
+
+
+        for(auto& p : _elements) {
+            DrawElement element = p.second;
             element.command->init(0,
                       element.texture,
                       cocos2d::GLProgramState::getOrCreateWithGLProgramName(cocos2d::GLProgram::SHADER_NAME_POSITION_TEXTURE_COLOR_NO_MVP, element.texture),
@@ -55,17 +64,17 @@ public:
     }
 
     void clear() {
-        for(DrawElement& element : _elements) {
-            delete element.command;
-            delete element.info;
-            delete element.quad;
+        for(auto& element : _elements) {
+            delete element.second.command;
+            delete element.second.info;
+            delete element.second.quad;
         }
 
         _elements.clear();
     }
 
 private:
-    list<DrawElement> _elements;
+    std::multiset<std::pair<int, DrawElement>> _elements;
 
 };
 

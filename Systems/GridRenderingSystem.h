@@ -30,27 +30,15 @@ public:
         auto cellsView = registry.view<Cell, Drawable>();
         const GameSettings& settings = registry.ctx<GameSettings>();
 
-        entt::entity player = entt::null;
-
         cellsView.each([&](entt::entity entity, Cell& cellComponent, Drawable& drawableComponent) {
 
-            if(!registry.has<Controllable>(entity))
-                _drawer->drawSpriteFrame(drawableComponent.currentFrame,
-                                     Vec2(cellComponent.x, cellComponent.y) * settings.cellSize,
-                                     cellComponent.z,
-                                     Size(settings.cellSize,settings.cellSize),
-                                     drawableComponent.color);
-            else player = entity;
+            _drawer->drawSpriteFrame(drawableComponent.currentFrame,
+                                 Vec2(cellComponent.x, cellComponent.y) * settings.cellSize,
+                                 cellComponent.z,
+                                 Size(settings.cellSize,settings.cellSize),
+                                 drawableComponent.color);
 
         });
-
-        Drawable& drawableComponent = registry.get<Drawable>(player);
-        Cell& cellComponent = registry.get<Cell>(player);
-        _drawer->drawSpriteFrame(drawableComponent.currentFrame,
-                                     Vec2(cellComponent.x, cellComponent.y) * settings.cellSize,
-                                     cellComponent.z,
-                                     Size(settings.cellSize,settings.cellSize),
-                                     drawableComponent.color);
 
     }
 

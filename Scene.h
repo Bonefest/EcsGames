@@ -70,7 +70,7 @@ public:
         entt::entity player = registry.create();
         registry.assign<Controllable>(player);
         registry.assign<Drawable>(player, "Wall.png");
-        registry.assign<Cell>(player, 3, 3, 0);
+        registry.assign<Cell>(player, 3, 3, -1);
 
         WorldData& wd = registry.ctx<WorldData>();
         wd.creatures[3][3] = player;
@@ -114,12 +114,13 @@ private:
         auto& registry = _systemManager.getRegistry();
         EntityFactory& factory = registry.ctx<EntityFactory>();
         WorldData& data = registry.ctx<WorldData>();
+        GameSettings& settings = registry.ctx<GameSettings>();
 
-        for(int y = 0; y < 24; y++) {
+        for(int y = 0; y < settings.gridHeight; y++) {
             data.objects.emplace_back();
             data.creatures.emplace_back();
 
-            for(int x = 0; x < 24; x++) {
+            for(int x = 0; x < settings.gridWidth; x++) {
                 entt::entity floor = factory.createEntity("floor");
                 assert(registry.valid(floor));
 
