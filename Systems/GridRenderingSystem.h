@@ -2,6 +2,7 @@
 #define _GRIDRENDERINGSYSTEM_H_
 
 #include "cocos2d.h"
+#include "ui/UIScrollView.h"
 
 #include "../Dependencies/entt.hpp"
 
@@ -17,12 +18,26 @@
 USING_NS_CC;
 using std::list;
 
-class GridRenderingSystem: public ISystem {
+class GridRenderingView: public ISystem {
 public:
-    GridRenderingSystem(Node* container) {
-        _drawer = DrawTextureNode::createDrawer();
-        container->addChild(_drawer);
+    GridRenderingView(Vec2 position, Size viewportSize, Size worldSize) {
+        _container = cocos2d::ui::ScrollView::create();
+        _container->setContentSize(viewportSize);
+        _container->setInnerContainerSize(worldSize);
+        _container->setPosition(position);
+        _container->setDirection(cocos2d::ui::ScrollView::Direction::BOTH);
+        _container->setScrollBarEnabled(false);
 
+        cocos2d::Director::getInstance()->getRunningScene()->addChild(_container);
+
+        _drawer = DrawTextureNode::createDrawer();
+        _container->addChild(_drawer);
+
+    }
+
+    ~GridRenderingView() {
+        _drawer->removeFromParentAndCleanup(true);
+        _container->removeFromParentAndCleanup(true);
     }
 
     virtual void update(entt::registry& registry, entt::dispatcher& dispatcher, float delta) {
@@ -60,7 +75,6 @@ public:
                             float distanceToLight = Vec2(cellComponent.x, cellComponent.y).distance(Vec2(lightCellComponent.x, lightCellComponent.y));
 
                             float k = (1.0 - distanceToLight / float(lightComponent.radius)); //light power is unused!
-                            log("%f %f", distanceToLight, k);
                             totalLightColor.x += lightComponent.intensity.r * k;
                             totalLightColor.y += lightComponent.intensity.g * k;
                             totalLightColor.z += lightComponent.intensity.b * k;
@@ -93,7 +107,7 @@ public:
     }
 
 private:
-
+    cocos2d::ui::ScrollView* _container;
     DrawTextureNode* _drawer;
 
 };

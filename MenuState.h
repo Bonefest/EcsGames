@@ -9,6 +9,10 @@ using std::shared_ptr;
 #include "Command.h"
 #include "Events/Events.h"
 
+#include "Systems/GridRenderingSystem.h"
+#include "Systems/HUDSystem.h"
+
+
 class MenuState;
 struct UnprocessedKeyActionEvent;
 
@@ -25,34 +29,35 @@ protected:
 class MenuState {
 public:
     virtual ~MenuState() { }
+    virtual void onEnter(entt::registry& registry, entt::dispatcher& dispatcher, float delta) { }
+    virtual void update(entt::registry& registry, entt::dispatcher& dispatcher, float delta) { }
+
+    //virtual void processCommand(IStateOwner* stateOwner, entt::registy, const UnprocessedKeyActionEvent& event);
     virtual shared_ptr<Command> generateCommand(IStateOwner* stateOwner, entt::registry& registry, const UnprocessedKeyActionEvent& event) = 0;
 };
 
 class MenuNormalState: public MenuState {
 public:
-    virtual ~MenuNormalState() { }
-    virtual shared_ptr<Command> generateCommand(IStateOwner* stateOwner, entt::registry& registry, const UnprocessedKeyActionEvent& event) {
-        entt::entity player = entt::null;
-        auto view = registry.view<Controllable>();
-        for(entt::entity entity : view) {
-            player = entity; break;
-        }
+    MenuNormalState(entt::registry& registry);
+    virtual ~MenuNormalState();
+    virtual void update(entt::registry& registry, entt::dispatcher& dispatcher, float delta);
+    virtual shared_ptr<Command> generateCommand(IStateOwner* stateOwner, entt::registry& registry, const UnprocessedKeyActionEvent& event);
+private:
+    shared_ptr<GridRenderingView> _gridView;
+    shared_ptr<HUDSystem> _hudView;
+};
 
-        assert(registry.valid(player) && "Unable to generate a command cause cannot find a controllable entity!");
 
-        switch(event.keyType) {
-        case MOVE_TOP_LEFT:     return make_shared<MoveCommand>(registry, player, Vec2(-1,  1));
-        case MOVE_TOP:          return make_shared<MoveCommand>(registry, player, Vec2( 0,  1));
-        case MOVE_TOP_RIGHT:    return make_shared<MoveCommand>(registry, player, Vec2( 1,  1));
-        case MOVE_RIGHT:        return make_shared<MoveCommand>(registry, player, Vec2( 1,  0));
-        case MOVE_BOTTOM_RIGHT: return make_shared<MoveCommand>(registry, player, Vec2( 1, -1));
-        case MOVE_BOTTOM:       return make_shared<MoveCommand>(registry, player, Vec2( 0, -1));
-        case MOVE_BOTTOM_LEFT:  return make_shared<MoveCommand>(registry, player, Vec2(-1, -1));
-        case MOVE_LEFT:         return make_shared<MoveCommand>(registry, player, Vec2(-1,  0));
-        }
+class MenuAttackState: public MenuState {
+public:
+    MenuAttackState(entt::registry& registry);
+    virtual ~MenuAttackState();
+    virtual void update(entt::registry& registry, entt::dispatcher& dispatcher, float delta);
+    virtual shared_ptr<Command> generateCommand(IStateOwner* stateOwner, entt::registry& registry, const UnprocessedKeyActionEvent& event);
 
-        return make_shared<NullCommand>();
-    }
+private:
+    shared_ptr<GridRenderingView> _gridView;
+
 };
 
 #endif // MENUSTATE_H_INCLUDED

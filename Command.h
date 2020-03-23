@@ -1,6 +1,8 @@
 #ifndef COMMAND_H_INCLUDED
 #define COMMAND_H_INCLUDED
 
+#include "Components/Components.h"
+#include "Dependencies/entt.hpp"
 #include "cocos2d.h"
 
 USING_NS_CC;

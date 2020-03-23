@@ -38,8 +38,14 @@ public:
 
         _visibleSize = Director::getInstance()->getVisibleSize();
 
+        runAction(cocos2d::CallFunc::create(CC_CALLBACK_0(MainScene::onInitFinished, this)));
 
-        initWorldContainer();
+        scheduleUpdate();
+        return true;
+    }
+
+    void onInitFinished() {
+
         initContext();
         initSystems();
 
@@ -79,14 +85,18 @@ public:
 
         entt::entity testLight = registry.create();
         registry.assign<Cell>(testLight, 8, 5);
-        registry.assign<Light>(testLight, Color4F(0.99f, 0.0f, 0.0f, 255), 1.0f, 10.0f);
+        registry.assign<Light>(testLight, Color4F(1.0f, 1.0f, 1.0f, 255), 1.0f, 10.0f);
+
+        entt::entity testLight2 = registry.create();
+        registry.assign<Cell>(testLight2, 14, 11);
+        registry.assign<Light>(testLight2, Color4F(1.0f, 1.0f, 1.0f, 255), 1.0f, 10.0f);
+
+
 
         WorldData& wd = registry.ctx<WorldData>();
         wd.creatures[3][3] = player;
-
-        scheduleUpdate();
-        return true;
     }
+
     void update(float delta) {
 
         _systemManager.update(delta);
@@ -95,28 +105,17 @@ public:
 
 
 private:
-    void initWorldContainer() {
-        _worldContainer = cocos2d::ui::ScrollView::create();
-        _worldContainer->setContentSize(Size(_visibleSize.width * 0.5f, _visibleSize.height * 0.8f));
-        _worldContainer->setInnerContainerSize(Size(24 * 32, 24 * 32));
-        _worldContainer->setPosition(_visibleSize * 0.1f);
-        _worldContainer->setDirection(cocos2d::ui::ScrollView::Direction::BOTH);
-        _worldContainer->setScrollBarEnabled(false);
-        addChild(_worldContainer);
-    }
-
     void initContext() {
         auto& registry = _systemManager.getRegistry();
 
-        registry.set<EntityFactory>(registry, _worldContainer);
-        registry.set<GameSettings>(32.0f, 24, 24, Color4B(40, 40, 40, 255));
+        registry.set<EntityFactory>(registry);
+        registry.set<GameSettings>(32.0f, uint16_t(24), uint16_t(24), Color4B(40, 40, 40, 255));
         registry.set<WorldData>();
     }
 
     void initSystems() {
-        _systemManager.addSystem(make_shared<GridRenderingSystem>(_worldContainer));
-        _systemManager.addSystem(make_shared<HUDSystem>(this, _worldContainer));
-        _systemManager.addSystem(make_shared<ControllSystem>(_systemManager.getDispatcher()));
+        _systemManager.addSystem(make_shared<ControllSystem>(_systemManager.getRegistry(),
+                                                             _systemManager.getDispatcher()));
     }
 
     void generateMap() {
@@ -137,7 +136,7 @@ private:
                 cellComponent.x = x;
                 cellComponent.y = y;
 
-                if(x == 5 && y == 5) cellComponent.passable = false;
+                if(y == 3 && x > 2 && x < 18 && x != 8) cellComponent.passable = false;
 
                 data.objects[y].emplace_back();
                 data.objects[y][x].push_back(floor);
@@ -149,7 +148,6 @@ private:
 
     SystemManager _systemManager;
 
-    cocos2d::ui::ScrollView* _worldContainer;
     shared_ptr<InputHandler> _handler;
     shared_ptr<ConfigurableKeyDispatcher> _dispatcher;
 

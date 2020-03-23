@@ -12,15 +12,19 @@ USING_NS_CC;
 
 class HUDSystem: public ISystem {
 public:
-    HUDSystem(Node* scene, Node* container): _scene(scene), _container(container) {
+    HUDSystem(Vec2 pos, Size size): _pos(pos), _size(size) {
         _renderer = DrawNode::create();
 
-        scene->addChild(_renderer);
+        Director::getInstance()->getRunningScene()->addChild(_renderer);
+    }
+
+    ~HUDSystem() {
+        _renderer->removeFromParentAndCleanup(true);
     }
 
     virtual void update(entt::registry& registry, entt::dispatcher& dispatcher, float delta) {
         _renderer->clear();
-        _renderer->drawRect(_container->getPosition(), _container->getPosition() + Vec2(_container->getContentSize()), Color4F::WHITE);
+        _renderer->drawRect(_pos, _pos + Size(_size), Color4F::WHITE);
     }
 
     void onGameActionEvent(const GameActionEvent& event) {
@@ -28,9 +32,8 @@ public:
     }
 
 private:
-    Node* _scene;
-    Node* _container;
-
+    Vec2 _pos;
+    Size _size;
     DrawNode* _renderer;
 
 };

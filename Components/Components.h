@@ -3,6 +3,7 @@
 
 #include "cocos2d.h"
 #include "../StateSprite.h"
+#include "../Dependencies/entt.hpp"
 
 #include <string>
 #include <vector>
@@ -19,18 +20,21 @@ struct Drawable {
 
     string currentFrame;
 	Color4B color;
+
+	//map<DrawableState, string> - different frames for different states
 };
 
 typedef uint16_t Coordinate;
 
 struct Cell {
-    explicit Cell(int16_t px = 0, int16_t py = 0, uint16_t pz = 0): x(px), y(py), z(pz), passable(true) { }
+    explicit Cell(int16_t px = 0, int16_t py = 0, uint16_t pz = 0): x(px), y(py), z(pz), passable(true), transparent(true) { }
 
     Coordinate x;
     Coordinate y;
     Coordinate z;
 
     bool passable;
+    bool transparent;
 
     string name;
 };

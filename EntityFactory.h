@@ -4,7 +4,7 @@
 
 class EntityFactory {
 public:
-    EntityFactory(entt::registry& registry, Node* container): _registry(registry), _container(container) { }
+    EntityFactory(entt::registry& registry): _registry(registry){ }
 
     void initFactoryWithFile(const std::string& fileName);
 
@@ -13,19 +13,12 @@ public:
         if(entityName == "door") {
             entity = _registry.create();
 
-            StateSprite* entitySprite = StateSprite::createSprite("DoorOpen");
-            entitySprite->addState(CLOSED, "DoorClosed");
-            _container->addChild(entitySprite);
-
             _registry.assign<Drawable>(entity, "DoorOpen");
             _registry.assign<Cell>(entity);
             _registry.assign<Destroyable>(entity, 100.0f, 0.0f, 0.0f);
             _registry.assign<Lockable>(entity, 0);
         } else if(entityName == "wall") {
             entity = _registry.create();
-
-            StateSprite* entitySprite = StateSprite::createSprite("Wall.png");
-            _container->addChild(entitySprite);
 
             _registry.assign<Drawable>(entity, "Wall.png");
             _registry.assign<Destroyable>(entity, 100.0f, 0.0f, 100.0f);
@@ -42,9 +35,6 @@ public:
 
 private:
     entt::registry& _registry;
-
-    Node* _container;
-
 };
 
 

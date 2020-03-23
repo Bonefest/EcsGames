@@ -10,6 +10,13 @@ using std::string;
 
 USING_NS_CC;
 
+struct EnableSystemEvent {
+    EnableSystemEvent(uint32_t systemTag, bool systemEnabled): tag(systemTag), enabled(systemEnabled) { }
+
+    uint32_t tag;
+    bool enabled;
+};
+
 //Можно заменить одной структурой, но я решил оставить так для возможности разделения событий на 2 метода
 struct KeyPressedEvent {
     explicit KeyPressedEvent(cocos2d::EventKeyboard::KeyCode keyCode): key(keyCode) { }

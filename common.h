@@ -21,4 +21,5 @@ enum KeyType {
 };
 
 
+
 #endif // COMMON_H_INCLUDED
