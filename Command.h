@@ -35,6 +35,8 @@ public:
                     cellComponent.y = newY;
 
                     data.creatures[newY][newX] = _receiver;
+
+                    //trigger "EntityMovedEvent"
                 }
             }
         }

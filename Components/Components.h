@@ -21,14 +21,27 @@ struct Drawable {
 	Color4B color;
 };
 
-struct Cell {
-    explicit Cell(int16_t px = 0, int16_t py = 0, uint16_t pz = 0): x(px), y(py), z(pz) { }
+typedef uint16_t Coordinate;
 
-    uint16_t x;
-    uint16_t y;
-    uint16_t z;
+struct Cell {
+    explicit Cell(int16_t px = 0, int16_t py = 0, uint16_t pz = 0): x(px), y(py), z(pz), passable(true) { }
+
+    Coordinate x;
+    Coordinate y;
+    Coordinate z;
+
+    bool passable;
 
     string name;
+};
+
+struct PointLight {
+    explicit PointLight(Color4B lightIntensity, float lightPower, uint32_t lightRadius): intensity(lightIntensity),
+                                                                                         power(lightPower),
+                                                                                         radius(lightRadius) { }
+    Color4B intensity;
+    float power;
+    uint32_t radius;
 };
 
 struct Creature {
@@ -46,10 +59,11 @@ struct Creature {
     uint16_t intellect;
 
     uint32_t penaltyTime;
+    uint32_t viewDistance;
 };
 
 struct Controllable {
-
+    vector<vector<std::string>> discoveredBlocks;   //TODO: map<level, vector<vector<std::string>>
 };
 
 struct Destroyable {
@@ -82,6 +96,8 @@ struct GameSettings {
 
     uint16_t gridWidth;
     uint16_t gridHeight;
+
+    Color4B ambientColor;
 
 };
 

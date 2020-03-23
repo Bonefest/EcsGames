@@ -72,6 +72,14 @@ public:
         registry.assign<Drawable>(player, "Wall.png");
         registry.assign<Cell>(player, 3, 3, -1);
 
+        Controllable& controllable = registry.get<Controllable>(player);
+        for(int i = 0;i < 24; ++i) {
+            controllable.discoveredBlocks.emplace_back();
+            for(int j = 0;j < 24; ++j) {
+                controllable.discoveredBlocks[i].emplace_back();
+            }
+        }
+
         WorldData& wd = registry.ctx<WorldData>();
         wd.creatures[3][3] = player;
 
@@ -127,6 +135,8 @@ private:
                 Cell& cellComponent = registry.get<Cell>(floor);
                 cellComponent.x = x;
                 cellComponent.y = y;
+
+                if(x == 5 && y == 5) cellComponent.passable = false;
 
                 data.objects[y].emplace_back();
                 data.objects[y][x].push_back(floor);

@@ -1,6 +1,8 @@
 #ifndef HELPER_H_INCLUDED
 #define HELPER_H_INCLUDED
 
+#include "Components/Components.h"
+
 void prepareQuad(SpriteFrame* frame, Color4B color, Rect contentSize, cocos2d::V3F_C4B_T2F_Quad* outQuad) {
     Texture2D* tex = frame->getTexture();
     if(tex == nullptr) return;
@@ -59,5 +61,42 @@ void prepareQuad(SpriteFrame* frame, Color4B color, Rect contentSize, cocos2d::V
 
 }
 
+bool isVisible(entt::registry& registry,
+               Coordinate fromX, Coordinate fromY,
+               Coordinate targetX, Coordinate targetY,
+               uint16_t visibleRadius,
+               WorldData& data) {
+
+        int dx = targetX - fromX;
+        int dy = targetY - fromY;
+        if( (dx*dx + dy*dy) > visibleRadius * visibleRadius) return false;
+
+        if(dx == 0 && dx == dy) return true;
+        //Normal
+        if(abs(dx) > abs(dy)) {
+            float k = float(dy)/dx;
+            int sign = (targetX > fromX) ? 1 : -1;
+            for(int x = fromX; x != targetX; x += sign) {
+                int y = std::round(k*(x - fromX)) + fromY;
+
+                entt::entity object = data.objects[y][x][0];
+                Cell& cellComponent = registry.get<Cell>(object);
+                if(!cellComponent.passable) return false;
+            }
+        } else {
+            float k = float(dx)/dy;
+            int sign = (targetY > fromY) ? 1 : -1;
+            for(int y = fromY; y != targetY; y += sign) {
+                int x = std::round(k*(y - fromY)) + fromX;
+
+                entt::entity object = data.objects[y][x][0];
+                Cell& cellComponent = registry.get<Cell>(object);
+                if(!cellComponent.passable) return false;
+            }
+        }
+
+
+        return true;
+}
 
 #endif // HELPER_H_INCLUDED
