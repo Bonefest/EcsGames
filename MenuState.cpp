@@ -3,7 +3,7 @@
 
 #include "MenuState.h"
 
-MenuNormalState::MenuNormalState(entt::registry& registry) {
+MenuNormalState::MenuNormalState(entt::registry& registry, entt::dispatcher& dispatcher) {
         Size visibleSize = Director::getInstance()->getVisibleSize();
 
         GameSettings& settings = registry.ctx<GameSettings>();
@@ -12,6 +12,8 @@ MenuNormalState::MenuNormalState(entt::registry& registry) {
                                                    Size(visibleSize.width * 0.5f, visibleSize.height * 0.8f),
                                                    Size(settings.gridWidth, settings.gridHeight) * settings.cellSize);
         _hudView = make_shared<HUDSystem>(visibleSize * 0.1f, Size(visibleSize.width * 0.5f, visibleSize.height * 0.8f));
+        _logView = make_shared<LogRenderingView>(Vec2(visibleSize.width * 0.6f, visibleSize.height * 0.1f),
+                                                 Size(visibleSize.width * 0.3f, visibleSize.height * 0.5f), dispatcher);
 }
 
 MenuNormalState::~MenuNormalState() { }
@@ -19,10 +21,10 @@ MenuNormalState::~MenuNormalState() { }
 void MenuNormalState::update(entt::registry& registry, entt::dispatcher& dispatcher, float delta) {
         _gridView->update(registry, dispatcher, delta);
         _hudView->update(registry, dispatcher, delta);
-
+        _logView->update(registry, dispatcher, delta);
 }
 
-shared_ptr<Command> MenuNormalState::generateCommand(IStateOwner* stateOwner, entt::registry& registry, const UnprocessedKeyActionEvent& event) {
+shared_ptr<Command> MenuNormalState::generateCommand(IStateOwner* stateOwner, entt::registry& registry, entt::dispatcher& dispatcher, const UnprocessedKeyActionEvent& event) {
         entt::entity player = entt::null;
         auto view = registry.view<Controllable>();
         for(entt::entity entity : view) {
@@ -33,6 +35,7 @@ shared_ptr<Command> MenuNormalState::generateCommand(IStateOwner* stateOwner, en
             stateOwner->setState(make_shared<MenuAttackState>(registry));
         }
 
+        dispatcher.trigger<MessageEvent>("Lorem ipsum dolor glsdlglsd lgsdlglsd glsdl glsdl gsld glsdlglsdg lsdlgdslglsdlg lsdl gsldgldslgdslgldslgdslglsdgldslgldsglsdl", Color3B::RED);
 
         assert(registry.valid(player) && "Unable to generate a command cause cannot find a controllable entity!");
 
@@ -69,16 +72,16 @@ void MenuAttackState::update(entt::registry& registry, entt::dispatcher& dispatc
     _gridView->update(registry, dispatcher, delta);
 }
 
-shared_ptr<Command> MenuAttackState::generateCommand(IStateOwner* stateOwner, entt::registry& registry, const UnprocessedKeyActionEvent& event) {
+shared_ptr<Command> MenuAttackState::generateCommand(IStateOwner* stateOwner, entt::registry& registry, entt::dispatcher& dispatcher, const UnprocessedKeyActionEvent& event) {
     entt::entity player = entt::null;
     auto view = registry.view<Controllable>();
     for(entt::entity entity : view) {
         player = entity; break;
     }
 
-    if(event.key == cocos2d::EventKeyboard::KeyCode::KEY_ESCAPE) {
-        stateOwner->setState(make_shared<MenuNormalState>(registry));
-    }
+//    if(event.key == cocos2d::EventKeyboard::KeyCode::KEY_ESCAPE) {
+//        stateOwner->setState(make_shared<MenuNormalState>(registry));
+//    }
 
     assert(registry.valid(player) && "Unable to generate a command cause cannot find a controllable entity!");
 

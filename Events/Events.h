@@ -30,11 +30,12 @@ struct KeyReleasedEvent {
     cocos2d::EventKeyboard::KeyCode key;
 };
 
-struct GameActionEvent {
-    explicit GameActionEvent(const string& actionDescription, Color4F color): description(actionDescription),
-                                                                              textColor(color) { }
-    string  description;
-    Color4F textColor;
+struct MessageEvent {
+    explicit MessageEvent(const string& actionDescription, Color3B color): message(actionDescription),
+                                                                           textColor(color) { }
+    uint32_t channel;
+    string  message;
+    Color3B textColor;
 };
 
 struct UnprocessedKeyActionEvent {

@@ -10,6 +10,7 @@ using std::shared_ptr;
 #include "Events/Events.h"
 
 #include "Systems/GridRenderingSystem.h"
+#include "Systems/LogRenderingView.h"
 #include "Systems/HUDSystem.h"
 
 
@@ -33,18 +34,19 @@ public:
     virtual void update(entt::registry& registry, entt::dispatcher& dispatcher, float delta) { }
 
     //virtual void processCommand(IStateOwner* stateOwner, entt::registy, const UnprocessedKeyActionEvent& event);
-    virtual shared_ptr<Command> generateCommand(IStateOwner* stateOwner, entt::registry& registry, const UnprocessedKeyActionEvent& event) = 0;
+    virtual shared_ptr<Command> generateCommand(IStateOwner* stateOwner, entt::registry& registry, entt::dispatcher& dispatcher, const UnprocessedKeyActionEvent& event) = 0;
 };
 
 class MenuNormalState: public MenuState {
 public:
-    MenuNormalState(entt::registry& registry);
+    MenuNormalState(entt::registry& registry, entt::dispatcher& dispatcher);
     virtual ~MenuNormalState();
     virtual void update(entt::registry& registry, entt::dispatcher& dispatcher, float delta);
-    virtual shared_ptr<Command> generateCommand(IStateOwner* stateOwner, entt::registry& registry, const UnprocessedKeyActionEvent& event);
+    virtual shared_ptr<Command> generateCommand(IStateOwner* stateOwner, entt::registry& registry, entt::dispatcher& dispatcher, const UnprocessedKeyActionEvent& event);
 private:
     shared_ptr<GridRenderingView> _gridView;
     shared_ptr<HUDSystem> _hudView;
+    shared_ptr<LogRenderingView> _logView;
 };
 
 
@@ -53,7 +55,7 @@ public:
     MenuAttackState(entt::registry& registry);
     virtual ~MenuAttackState();
     virtual void update(entt::registry& registry, entt::dispatcher& dispatcher, float delta);
-    virtual shared_ptr<Command> generateCommand(IStateOwner* stateOwner, entt::registry& registry, const UnprocessedKeyActionEvent& event);
+    virtual shared_ptr<Command> generateCommand(IStateOwner* stateOwner, entt::registry& registry, entt::dispatcher& dispatcher, const UnprocessedKeyActionEvent& event);
 
 private:
     shared_ptr<GridRenderingView> _gridView;

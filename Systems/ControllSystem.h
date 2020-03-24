@@ -53,7 +53,7 @@ private:
 class ControllSystem: public ISystem, public IStateOwner {
 public:
     ControllSystem(entt::registry& registry, entt::dispatcher& dispatcher) {
-        _currentState = make_shared<MenuNormalState>(registry);
+        _currentState = make_shared<MenuNormalState>(registry, dispatcher);
 
         dispatcher.sink<UnprocessedKeyActionEvent>().connect<&ControllSystem::onUnprocessedKeyActionEvent>(*this);
     }
@@ -61,7 +61,7 @@ public:
     virtual void update(entt::registry& registry, entt::dispatcher& dispatcher, float delta) {
         _currentState->update(registry, dispatcher, delta);
         for(UnprocessedKeyActionEvent& event : _receivedEvents) {
-            _currentState->generateCommand(this, registry, event)->execute();
+            _currentState->generateCommand(this, registry, dispatcher, event)->execute();
         }
 
         _receivedEvents.clear();

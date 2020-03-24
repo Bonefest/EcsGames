@@ -27,9 +27,6 @@ public:
         _renderer->drawRect(_pos, _pos + Size(_size), Color4F::WHITE);
     }
 
-    void onGameActionEvent(const GameActionEvent& event) {
-        //Messaging system
-    }
 
 private:
     Vec2 _pos;
