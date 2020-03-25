@@ -3,25 +3,34 @@
 
 #include "MenuState.h"
 
-MenuNormalState::MenuNormalState(entt::registry& registry, entt::dispatcher& dispatcher) {
-        Size visibleSize = Director::getInstance()->getVisibleSize();
+#include "common.h"
 
-        GameSettings& settings = registry.ctx<GameSettings>();
+MenuNormalState::MenuNormalState(entt::registry& registry, entt::dispatcher& dispatcher, IStateOwner* owner): _owner(owner) {
 
-        _gridView = make_shared<GridRenderingView>(visibleSize * 0.1f,
-                                                   Size(visibleSize.width * 0.5f, visibleSize.height * 0.8f),
-                                                   Size(settings.gridWidth, settings.gridHeight) * settings.cellSize);
-        _hudView = make_shared<HUDSystem>(visibleSize * 0.1f, Size(visibleSize.width * 0.5f, visibleSize.height * 0.8f));
-        _logView = make_shared<LogRenderingView>(Vec2(visibleSize.width * 0.6f, visibleSize.height * 0.1f),
-                                                 Size(visibleSize.width * 0.3f, visibleSize.height * 0.5f), dispatcher);
 }
 
 MenuNormalState::~MenuNormalState() { }
 
+void MenuNormalState::onEnter(entt::registry& registry, entt::dispatcher& dispatcher) {
+    Size visibleSize = Director::getInstance()->getVisibleSize();
+
+    GameSettings& settings = registry.ctx<GameSettings>();
+
+    SystemContainer& container = _owner->getViewContainer();
+
+    if(container.findSystem(ViewsTags::GridViewTag) == nullptr) {
+        container.addSystem(make_shared<GridRenderingView>(visibleSize * 0.1f, Size(visibleSize.width * 0.5f, visibleSize.height * 0.8f),
+                                                           Size(settings.gridWidth, settings.gridHeight) * settings.cellSize), ViewsTags::GridViewTag);
+    }
+
+    if(container.findSystem(ViewsTags::LogViewTag) == nullptr) {
+        container.addSystem(make_shared<LogRenderingView>(Vec2(visibleSize.width * 0.6f, visibleSize.height * 0.1f),
+                                                          Size(visibleSize.width * 0.3f, visibleSize.height * 0.5f), dispatcher), ViewsTags::LogViewTag);
+    }
+}
+
 void MenuNormalState::update(entt::registry& registry, entt::dispatcher& dispatcher, float delta) {
-        _gridView->update(registry, dispatcher, delta);
-        _hudView->update(registry, dispatcher, delta);
-        _logView->update(registry, dispatcher, delta);
+
 }
 
 shared_ptr<Command> MenuNormalState::generateCommand(IStateOwner* stateOwner, entt::registry& registry, entt::dispatcher& dispatcher, const UnprocessedKeyActionEvent& event) {
@@ -32,7 +41,7 @@ shared_ptr<Command> MenuNormalState::generateCommand(IStateOwner* stateOwner, en
         }
 
         if(event.key == cocos2d::EventKeyboard::KeyCode::KEY_A) {
-            stateOwner->setState(make_shared<MenuAttackState>(registry));
+            stateOwner->setState(make_shared<MenuAttackState>(registry), registry, dispatcher);
         }
 
         dispatcher.trigger<MessageEvent>("Lorem ipsum dolor glsdlglsd lgsdlglsd glsdl glsdl gsld glsdlglsdg lsdlgdslglsdlg lsdl gsldgldslgdslgldslgdslglsdgldslgldsglsdl", Color3B::RED);

@@ -50,15 +50,16 @@ private:
 };
 
 
-class ControllSystem: public ISystem, public IStateOwner {
+class StateControllSystem: public ISystem, public IStateOwner {
 public:
-    ControllSystem(entt::registry& registry, entt::dispatcher& dispatcher) {
-        _currentState = make_shared<MenuNormalState>(registry, dispatcher);
+    StateControllSystem(entt::registry& registry, entt::dispatcher& dispatcher) {
+        setState(make_shared<MenuNormalState>(registry, dispatcher, this), registry, dispatcher);
 
-        dispatcher.sink<UnprocessedKeyActionEvent>().connect<&ControllSystem::onUnprocessedKeyActionEvent>(*this);
+        dispatcher.sink<UnprocessedKeyActionEvent>().connect<&StateControllSystem::onUnprocessedKeyActionEvent>(*this);
     }
 
     virtual void update(entt::registry& registry, entt::dispatcher& dispatcher, float delta) {
+        _viewContainer.updateSystems(registry, dispatcher, delta);
         _currentState->update(registry, dispatcher, delta);
         for(UnprocessedKeyActionEvent& event : _receivedEvents) {
             _currentState->generateCommand(this, registry, dispatcher, event)->execute();
@@ -73,6 +74,7 @@ public:
 
 private:
     vector<UnprocessedKeyActionEvent> _receivedEvents;
+
 };
 
 #endif // CHARACTERCONTROLLSYSTEM_H_INCLUDED
