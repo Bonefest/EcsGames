@@ -20,6 +20,11 @@ enum KeyType {
     UNRESOLVED
 };
 
+enum ViewsTags {
+    GridViewTag,
+    LogViewTag,
+    InventoryViewTag,
+};
 
 
 #endif // COMMON_H_INCLUDED

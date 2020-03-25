@@ -114,8 +114,8 @@ private:
     }
 
     void initSystems() {
-        _systemManager.addSystem(make_shared<ControllSystem>(_systemManager.getRegistry(),
-                                                             _systemManager.getDispatcher()));
+        _systemManager.getContainer().addSystem(make_shared<StateControllSystem>(_systemManager.getRegistry(),
+                                                                                 _systemManager.getDispatcher()));
     }
 
     void generateMap() {
