@@ -38,6 +38,17 @@ struct MessageEvent {
     Color3B textColor;
 };
 
+struct HintMessageEvent {
+    explicit HintMessageEvent(string hintMessage, Color3B hintColor, float hintLifetime): hint(hintMessage),
+                                                                                          textColor(hintColor),
+                                                                                          lifetime(hintLifetime) { }
+
+
+    string hint;
+    Color3B textColor;
+    float lifetime;
+};
+
 struct UnprocessedKeyActionEvent {
     explicit UnprocessedKeyActionEvent(EventKeyboard::KeyCode pressedKey, KeyType type): key(pressedKey), keyType(type) { }
 

@@ -7,6 +7,8 @@
 #include "ui/UIScrollView.h"
 
 #include "System.h"
+#include "../common.h"
+#include "../helper.h"
 
 #include "../Dependencies/entt.hpp"
 
@@ -93,7 +95,9 @@ public:
 
         }
 
-        cocos2d::ui::Text* newText = cocos2d::ui::Text::create(cutMessage(messageEvent.message, 12.0f), "fonts/PressStart2P.ttf", 12.0f);
+        cocos2d::ui::Text* newText = cocos2d::ui::Text::create(cutMessage(messageEvent.message, 12.0f, _size.width),
+                                                                Constants::StandardFontName,
+                                                                12.0f);
         newText->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
         newText->setPosition(Vec2::ZERO);
         newText->setColor(messageEvent.textColor);
@@ -137,18 +141,6 @@ private:
 
             _scroller->setInnerContainerSize(Size(contentSize.width, std::max(contentSize.height, currentMaxHeight)));
         }
-    }
-
-    std::string cutMessage(const std::string& message, float fontSize) {
-        std::string result = "";
-
-        int splitNumber = std::ceil(message.size() * (fontSize + 1.0f) / _size.width);
-        int maxLineChars = message.size() / splitNumber;
-        for(int i = 0; i < splitNumber; ++i) {
-            result += message.substr(i * maxLineChars, maxLineChars) + "\n";
-        }
-
-        return result;
     }
 
     Vec2 _position;

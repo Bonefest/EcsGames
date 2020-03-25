@@ -53,7 +53,7 @@ private:
 class StateControllSystem: public ISystem, public IStateOwner {
 public:
     StateControllSystem(entt::registry& registry, entt::dispatcher& dispatcher) {
-        setState(make_shared<MenuNormalState>(registry, dispatcher, this), registry, dispatcher);
+        setState(make_shared<MenuNormalState>(_viewContainer), registry, dispatcher);
 
         dispatcher.sink<UnprocessedKeyActionEvent>().connect<&StateControllSystem::onUnprocessedKeyActionEvent>(*this);
     }

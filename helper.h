@@ -10,4 +10,8 @@ bool isVisible(entt::registry& registry,
                Coordinate targetX, Coordinate targetY,
                uint16_t visibleRadius,
                WorldData& data);
+
+
+std::string cutMessage(const std::string& message, float fontSize, float viewWidth);
+
 #endif // HELPER_H_INCLUDED

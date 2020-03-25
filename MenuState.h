@@ -33,25 +33,26 @@ public:
 
 class MenuNormalState: public MenuState {
 public:
-    MenuNormalState(entt::registry& registry, entt::dispatcher& dispatcher, IStateOwner* owner);
+    MenuNormalState(SystemContainer& container);
     virtual ~MenuNormalState();
     virtual void onEnter(entt::registry& registry, entt::dispatcher& dispatcher);
     virtual void update(entt::registry& registry, entt::dispatcher& dispatcher, float delta);
     virtual shared_ptr<Command> generateCommand(IStateOwner* stateOwner, entt::registry& registry, entt::dispatcher& dispatcher, const UnprocessedKeyActionEvent& event);
 private:
-    IStateOwner* _owner;
+    SystemContainer& _container;
 };
 
 
 class MenuAttackState: public MenuState {
 public:
-    MenuAttackState(entt::registry& registry);
+    MenuAttackState(SystemContainer& container);
     virtual ~MenuAttackState();
+    virtual void onEnter(entt::registry& registry, entt::dispatcher& dispatcher);
     virtual void update(entt::registry& registry, entt::dispatcher& dispatcher, float delta);
     virtual shared_ptr<Command> generateCommand(IStateOwner* stateOwner, entt::registry& registry, entt::dispatcher& dispatcher, const UnprocessedKeyActionEvent& event);
 
 private:
-    shared_ptr<GridRenderingView> _gridView;
+    SystemContainer& _container;
 
 };
 

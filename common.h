@@ -1,6 +1,8 @@
 #ifndef COMMON_H_INCLUDED
 #define COMMON_H_INCLUDED
 
+#include <string>
+
 enum KeyType {
     MOVE_TOP_LEFT,
     MOVE_TOP,
@@ -20,11 +22,18 @@ enum KeyType {
     UNRESOLVED
 };
 
-enum ViewsTags {
-    GridViewTag,
-    LogViewTag,
-    InventoryViewTag,
-};
+
+namespace Constants {
+
+    enum ViewsTags {
+        GridViewTag,
+        LogViewTag,
+        HintViewTag,
+        InventoryViewTag,
+    };
+
+    const std::string StandardFontName = "fonts/PressStart2P.ttf";
+}
 
 
 #endif // COMMON_H_INCLUDED

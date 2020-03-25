@@ -95,3 +95,25 @@ bool isVisible(entt::registry& registry,
 
         return true;
 }
+
+
+std::string cutMessage(const std::string& message, float fontSize, float viewWidth) {
+    std::string result = "";
+
+    int splitNumber = std::ceil(message.size() * (fontSize + 1.0f) / viewWidth);
+    int maxLineChars = viewWidth / (fontSize + 1.0f);
+
+    int graphCharsCounter = 0;
+    cocos2d::log("%d", maxLineChars);
+    for(size_t i = 0;i < message.size(); ++i) {
+        if(message[i] != '\n') graphCharsCounter++;
+        else graphCharsCounter = 0;
+
+        result += message[i];
+        if(graphCharsCounter >= maxLineChars) {
+            result += "\n";
+            graphCharsCounter = 0;
+        }
+    }
+    return result;
+}
