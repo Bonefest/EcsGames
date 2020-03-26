@@ -126,6 +126,20 @@ private:
 
         for(int y = 0; y < Constants::MAP_HEIGHT; y++) {
             for(int x = 0; x < Constants::MAP_WIDTH; x++) {
+
+
+
+                if(y == 3 && x > 2 && x < 18 && x != 8) {
+                    entt::entity entity = entt::null;
+                    entity = factory.createEntity("door");
+
+                    Cell& cellComponent = registry.get<Cell>(entity);
+                    cellComponent.x = x;
+                    cellComponent.y = y;
+
+                    data.objects[y][x].push_back(entity);
+                }
+
                 entt::entity floor = factory.createEntity("floor");
                 assert(registry.valid(floor));
 
@@ -133,7 +147,6 @@ private:
                 cellComponent.x = x;
                 cellComponent.y = y;
 
-                if(y == 3 && x > 2 && x < 18 && x != 8) cellComponent.passable = false;
 
                 data.floor[y][x] = floor;
                 data.creatures[y][x] = entt::null;

@@ -36,7 +36,8 @@ namespace Constants {
     };
 
     enum AnimationsTags {
-        BaseAnimationTag
+        BaseAnimationTag,
+        OpenedAnimationTag
     };
 
     const std::string StandardFontName = "fonts/PressStart2P.ttf";

@@ -14,4 +14,6 @@ bool isVisible(entt::registry& registry,
 
 std::string cutMessage(const std::string& message, float fontSize, float viewWidth);
 
+bool isValidPosition(uint16_t x, uint16_t y);
+
 #endif // HELPER_H_INCLUDED

@@ -8,6 +8,7 @@
 #include "../common.h"
 
 #include "AttackState.h"
+#include "OpeningState.h"
 
 NormalControllState::NormalControllState(SystemContainer& container): _container(container) { }
 
@@ -71,6 +72,7 @@ shared_ptr<Command> NormalControllState::handleInputEvent(IStateOwner* owner,
         case MOVE_BOTTOM:       return make_shared<MoveCommand>(registry, player, Vec2( 0, -1));
         case MOVE_BOTTOM_LEFT:  return make_shared<MoveCommand>(registry, player, Vec2(-1, -1));
         case MOVE_LEFT:         return make_shared<MoveCommand>(registry, player, Vec2(-1,  0));
+        case OPEN:              owner->setState(make_shared<OpeningControllState>(_container), registry, dispatcher); break;
         }
 
         return make_shared<NullCommand>();

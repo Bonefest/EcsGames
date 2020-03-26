@@ -69,6 +69,9 @@ bool isVisible(entt::registry& registry,
         if( (dx*dx + dy*dy) > visibleRadius * visibleRadius) return false;
 
         if(dx == 0 && dx == dy) return true;
+
+        int untransparentCounter = 0;
+
         //Normal
         if(abs(dx) > abs(dy)) {
             float k = float(dy)/dx;
@@ -79,8 +82,10 @@ bool isVisible(entt::registry& registry,
                 if(!data.objects[y][x].empty()) {
                     entt::entity object = data.objects[y][x][0];
                     Cell& cellComponent = registry.get<Cell>(object);
-                    if(!cellComponent.transparent) return false;
+                    if(!cellComponent.transparent) untransparentCounter++;
                 }
+
+                if(untransparentCounter > 1) return false;
             }
         } else {
             float k = float(dx)/dy;
@@ -92,11 +97,21 @@ bool isVisible(entt::registry& registry,
 
                     entt::entity object = data.objects[y][x][0];
                     Cell& cellComponent = registry.get<Cell>(object);
-                    if(!cellComponent.transparent) return false;
+                    if(!cellComponent.transparent) untransparentCounter++;
                 }
+
+                if(untransparentCounter > 1) return false;
             }
         }
 
+        if(untransparentCounter > 0) {
+            if(data.objects[fromY][fromX].empty()) return false;
+
+            entt::entity targetEntity = data.objects[fromY][fromX][0];
+            Cell& cellComponent = registry.get<Cell>(targetEntity);
+
+            if(cellComponent.transparent) return false;
+        }
 
         return true;
 }
@@ -121,4 +136,8 @@ std::string cutMessage(const std::string& message, float fontSize, float viewWid
         }
     }
     return result;
+}
+
+bool isValidPosition(uint16_t x, uint16_t y) {
+    return (x >= 0 && y >=0 && x < Constants::MAP_WIDTH && y < Constants::MAP_HEIGHT);
 }

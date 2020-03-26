@@ -13,10 +13,19 @@ public:
         if(entityName == "door") {
             entity = _registry.create();
 
-            _registry.assign<Drawable>(entity, EntityAnimation({"DoorClosed"}, 0.0f));
+            _registry.assign<Drawable>(entity, EntityAnimation({"DoorUnlighted.png"}, 0.0f));
             _registry.assign<Cell>(entity);
             _registry.assign<Destroyable>(entity, 100.0f, 0.0f, 0.0f);
             _registry.assign<Lockable>(entity, 0);
+
+            Cell& doorCellComponent = _registry.get<Cell>(entity);
+            doorCellComponent.passable = false;
+            doorCellComponent.transparent = false;
+            doorCellComponent.name = "Wooden door";
+
+            Drawable& doorDrawableComponent = _registry.get<Drawable>(entity);
+            doorDrawableComponent.animations.setAnimation(Constants::AnimationsTags::OpenedAnimationTag, EntityAnimation({"DoorOpen.png"}, 0.0f));
+
         } else if(entityName == "wall") {
             entity = _registry.create();
 
