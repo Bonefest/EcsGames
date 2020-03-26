@@ -13,20 +13,20 @@ public:
         if(entityName == "door") {
             entity = _registry.create();
 
-            _registry.assign<Drawable>(entity, "DoorOpen");
+            _registry.assign<Drawable>(entity, EntityAnimation({"DoorClosed"}, 0.0f));
             _registry.assign<Cell>(entity);
             _registry.assign<Destroyable>(entity, 100.0f, 0.0f, 0.0f);
             _registry.assign<Lockable>(entity, 0);
         } else if(entityName == "wall") {
             entity = _registry.create();
 
-            _registry.assign<Drawable>(entity, "Wall.png");
+            _registry.assign<Drawable>(entity, EntityAnimation({"Wall.png"}, 0.0f));
             _registry.assign<Destroyable>(entity, 100.0f, 0.0f, 100.0f);
             _registry.assign<Cell>(entity);
         } else if(entityName == "floor") {
             entity = _registry.create();
 
-            _registry.assign<Drawable>(entity, "Floor.png");
+            _registry.assign<Drawable>(entity, EntityAnimation({"Floor.png"}, 0.0f));
             _registry.assign<Cell>(entity);
         }
 

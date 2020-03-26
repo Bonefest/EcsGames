@@ -35,6 +35,10 @@ namespace Constants {
         InventoryViewTag,
     };
 
+    enum AnimationsTags {
+        BaseAnimationTag
+    };
+
     const std::string StandardFontName = "fonts/PressStart2P.ttf";
 }
 

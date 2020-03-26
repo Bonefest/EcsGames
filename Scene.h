@@ -72,7 +72,7 @@ public:
 
         entt::entity player = registry.create();
         registry.assign<Controllable>(player);
-        registry.assign<Drawable>(player, "Wall.png");
+        registry.assign<Drawable>(player, EntityAnimation({"Wall.png", "Floor.png"}, 1.0f));
         registry.assign<Cell>(player, 3, 3, -1);
 
         Controllable& controllable = registry.get<Controllable>(player);

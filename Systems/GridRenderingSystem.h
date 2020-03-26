@@ -62,9 +62,17 @@ public:
             for(uint16_t y = 0; y < Constants::MAP_HEIGHT; ++y) {
                 for(uint16_t x = 0; x < Constants::MAP_WIDTH; ++x) {
 
-                    drawCell(registry, data.floor[y][x], x, y, 0, controllableComponent, playerCell);
-                    drawCell(registry, data.creatures[y][x], x, y, 1, controllableComponent, playerCell);
+                    drawCell(registry, data.floor[y][x], x, y, 0, controllableComponent, playerCell);;
 
+                    for(auto item : data.items[y][x]) {
+                        drawCell(registry, item, x, y, 1, controllableComponent, playerCell);
+                    }
+
+                    for(auto object : data.objects[y][x]) {
+                        drawCell(registry, object, x, y, 2, controllableComponent, playerCell);
+                    }
+
+                    drawCell(registry, data.creatures[y][x], x, y, 3, controllableComponent, playerCell);
                 }
             }
         }
@@ -108,9 +116,9 @@ private:
             finalColor.g = std::min<int>(totalLightColor.y + finalColor.g, 255);
             finalColor.b = std::min<int>(totalLightColor.z + finalColor.b, 255);
 
-            controllableComponent.discoveredBlocks[y][x] = drawableComponent.currentFrame;
+            frameName = drawableComponent.animations.getCurrentFrame();
 
-            frameName = drawableComponent.currentFrame;
+            controllableComponent.discoveredBlocks[y][x] = frameName;
 
         } else {
             frameName = controllableComponent.discoveredBlocks[y][x];

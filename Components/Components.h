@@ -3,6 +3,7 @@
 
 #include "cocos2d.h"
 #include "../common.h"
+#include "../Animation.h"
 #include "../StateSprite.h"
 #include "../Dependencies/entt.hpp"
 
@@ -17,15 +18,14 @@ using std::array;
 using namespace cocos2d;
 
 struct Drawable {
-	explicit Drawable(const string& frameName): currentFrame(frameName), color(Color4B::WHITE) {
-        //cocos2d::SpriteFrame* frame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName("Floor.png");
-
+	explicit Drawable(EntityAnimation animation): color(Color4B::WHITE) {
+        animations.setAnimation(Constants::AnimationsTags::BaseAnimationTag, animation);
+        animations.setCurrentState(Constants::AnimationsTags::BaseAnimationTag);
 	}
 
-    string currentFrame;
 	Color4B color;
 
-	//map<DrawableState, string> - different frames for different states
+    AnimationsContainer animations;
 };
 
 typedef uint16_t Coordinate;
