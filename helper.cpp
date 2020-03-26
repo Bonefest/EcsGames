@@ -76,9 +76,11 @@ bool isVisible(entt::registry& registry,
             for(int x = fromX; x != targetX; x += sign) {
                 int y = std::round(k*(x - fromX)) + fromY;
 
-                entt::entity object = data.objects[y][x][0];
-                Cell& cellComponent = registry.get<Cell>(object);
-                if(!cellComponent.transparent) return false;
+                if(!data.objects[y][x].empty()) {
+                    entt::entity object = data.objects[y][x][0];
+                    Cell& cellComponent = registry.get<Cell>(object);
+                    if(!cellComponent.transparent) return false;
+                }
             }
         } else {
             float k = float(dx)/dy;
@@ -86,9 +88,12 @@ bool isVisible(entt::registry& registry,
             for(int y = fromY; y != targetY; y += sign) {
                 int x = std::round(k*(y - fromY)) + fromX;
 
-                entt::entity object = data.objects[y][x][0];
-                Cell& cellComponent = registry.get<Cell>(object);
-                if(!cellComponent.transparent) return false;
+                if(!data.objects[y][x].empty()) {
+
+                    entt::entity object = data.objects[y][x][0];
+                    Cell& cellComponent = registry.get<Cell>(object);
+                    if(!cellComponent.transparent) return false;
+                }
             }
         }
 

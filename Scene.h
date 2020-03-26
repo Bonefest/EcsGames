@@ -124,11 +124,8 @@ private:
         WorldData& data = registry.ctx<WorldData>();
         GameSettings& settings = registry.ctx<GameSettings>();
 
-        for(int y = 0; y < settings.gridHeight; y++) {
-            data.objects.emplace_back();
-            data.creatures.emplace_back();
-
-            for(int x = 0; x < settings.gridWidth; x++) {
+        for(int y = 0; y < Constants::MAP_HEIGHT; y++) {
+            for(int x = 0; x < Constants::MAP_WIDTH; x++) {
                 entt::entity floor = factory.createEntity("floor");
                 assert(registry.valid(floor));
 
@@ -138,9 +135,7 @@ private:
 
                 if(y == 3 && x > 2 && x < 18 && x != 8) cellComponent.passable = false;
 
-                data.objects[y].emplace_back();
-                data.objects[y][x].push_back(floor);
-                data.creatures[y].emplace_back();
+                data.floor[y][x] = floor;
                 data.creatures[y][x] = entt::null;
             }
         }

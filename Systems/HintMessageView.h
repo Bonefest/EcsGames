@@ -3,7 +3,6 @@
 
 #include "cocos2d.h"
 #include "ui/UIText.h"
-USING_NS_CC;
 
 #include "System.h"
 
@@ -11,6 +10,9 @@ USING_NS_CC;
 
 #include "../Events/Events.h"
 #include "../helper.h"
+
+USING_NS_CC;
+
 
 class HintMessageView: public ISystem {
 public:

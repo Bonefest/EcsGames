@@ -2,16 +2,20 @@
 #define COMPONENTS_H_INCLUDED
 
 #include "cocos2d.h"
+#include "../common.h"
 #include "../StateSprite.h"
 #include "../Dependencies/entt.hpp"
 
 #include <string>
 #include <vector>
+#include <array>
 
 using std::string;
 using std::vector;
+using std::array;
 
-USING_NS_CC;
+using namespace cocos2d;
+
 struct Drawable {
 	explicit Drawable(const string& frameName): currentFrame(frameName), color(Color4B::WHITE) {
         //cocos2d::SpriteFrame* frame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName("Floor.png");
@@ -66,6 +70,12 @@ struct Creature {
     uint32_t viewDistance;
 };
 
+struct DynamicObject {
+
+    float movementSpeed;
+    Vec2 direction;
+};
+
 struct Controllable {
     vector<vector<std::string>> discoveredBlocks;   //TODO: map<level, vector<vector<std::string>>
 };
@@ -106,9 +116,14 @@ struct GameSettings {
 
 };
 
+template <typename T>
+using gameMap = array<array<T, Constants::MAP_WIDTH>, Constants::MAP_HEIGHT>;
+
 struct WorldData {
-    vector<vector<vector<entt::entity>>> objects;
-    vector<vector<entt::entity>> creatures;
+    gameMap<entt::entity> floor;
+    gameMap<vector<entt::entity>> objects;
+    gameMap<vector<entt::entity>> items;
+    gameMap<entt::entity> creatures;
 };
 
 #endif // COMPONENTS_H_INCLUDED

@@ -25,6 +25,9 @@ enum KeyType {
 
 namespace Constants {
 
+    const uint16_t MAP_WIDTH  = 24;
+    const uint16_t MAP_HEIGHT = 24;
+
     enum ViewsTags {
         GridViewTag,
         LogViewTag,

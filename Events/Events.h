@@ -3,12 +3,13 @@
 
 
 #include <string>
-using std::string;
 
 #include "cocos2d.h"
 #include "../common.h"
 
-USING_NS_CC;
+using namespace cocos2d;
+using std::string;
+
 
 struct EnableSystemEvent {
     EnableSystemEvent(uint32_t systemTag, bool systemEnabled): tag(systemTag), enabled(systemEnabled) { }

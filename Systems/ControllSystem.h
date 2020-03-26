@@ -6,10 +6,12 @@
 #include <vector>
 #include <map>
 
-USING_NS_CC;
+using namespace cocos2d;
+
 using std::make_shared;
 using std::vector;
 using std::map;
+
 
 #include "System.h"
 #include "../Events/Events.h"

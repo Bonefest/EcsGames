@@ -55,58 +55,70 @@ public:
             Cell& playerCell = registry.get<Cell>(player);
             Controllable& controllableComponent = registry.get<Controllable>(player);
 
-            auto cellsView = registry.view<Cell, Drawable>();
             const GameSettings& settings = registry.ctx<GameSettings>();
             WorldData& data = registry.ctx<WorldData>();
 
-            auto lightsView = registry.view<Cell, Light>();
 
-            cellsView.each([&](entt::entity entity, Cell& cellComponent, Drawable& drawableComponent) {
+            for(uint16_t y = 0; y < Constants::MAP_HEIGHT; ++y) {
+                for(uint16_t x = 0; x < Constants::MAP_WIDTH; ++x) {
 
-                string frameName = "";
-                Color4B finalColor = settings.ambientColor;
+                    drawCell(registry, data.floor[y][x], x, y, 0, controllableComponent, playerCell);
+                    drawCell(registry, data.creatures[y][x], x, y, 1, controllableComponent, playerCell);
 
-                if(isVisible(registry, cellComponent.x, cellComponent.y, playerCell.x, playerCell.y, 100, data)) {
-
-                    Vec3 totalLightColor = Vec3::ZERO;
-                    lightsView.each([&](entt::entity light, Cell& lightCellComponent, Light& lightComponent) {
-                        if(isVisible(registry, cellComponent.x, cellComponent.y,
-                                               lightCellComponent.x, lightCellComponent.y, lightComponent.radius, data)) {
-                            float distanceToLight = Vec2(cellComponent.x, cellComponent.y).distance(Vec2(lightCellComponent.x, lightCellComponent.y));
-
-                            float k = (1.0 - distanceToLight / float(lightComponent.radius)); //light power is unused!
-                            totalLightColor.x += lightComponent.intensity.r * k;
-                            totalLightColor.y += lightComponent.intensity.g * k;
-                            totalLightColor.z += lightComponent.intensity.b * k;
-                        }
-                    });
-
-                    totalLightColor = totalLightColor * 255;
-                    finalColor.r = std::min<int>(totalLightColor.x + finalColor.r, 255);
-                    finalColor.g = std::min<int>(totalLightColor.y + finalColor.g, 255);
-                    finalColor.b = std::min<int>(totalLightColor.z + finalColor.b, 255);
-
-                    controllableComponent.discoveredBlocks[cellComponent.y][cellComponent.x] = drawableComponent.currentFrame;
-
-                    frameName = drawableComponent.currentFrame;
-
-                } else {
-                    frameName = controllableComponent.discoveredBlocks[cellComponent.y][cellComponent.x];
                 }
-
-               _drawer->drawSpriteFrame(frameName,
-                                 Vec2(cellComponent.x, cellComponent.y) * settings.cellSize,
-                                 cellComponent.z,
-                                 Size(settings.cellSize,settings.cellSize),
-                                 finalColor);
-
-
-            });
-
+            }
         }
     }
 
+
 private:
+    void drawCell(entt::registry& registry, entt::entity cell,
+                  Coordinate x, Coordinate y, Coordinate z,
+                  Controllable& controllableComponent, Cell& playerCell) {
+
+        if(cell == entt::null) return;
+
+        GameSettings& settings = registry.ctx<GameSettings>();
+        WorldData& data = registry.ctx<WorldData>();
+
+        string frameName = "";
+
+        Color4B finalColor = settings.ambientColor;
+
+        auto lightsView = registry.view<Cell, Light>();
+
+        if(isVisible(registry, x, y, playerCell.x, playerCell.y, 100, data)) {
+
+            Drawable& drawableComponent = registry.get<Drawable>(cell);
+
+            Vec3 totalLightColor = Vec3::ZERO;
+            lightsView.each([&](entt::entity light, Cell& lightCellComponent, Light& lightComponent) {
+                if(isVisible(registry, x, y, lightCellComponent.x, lightCellComponent.y, lightComponent.radius, data)) {
+                    float distanceToLight = Vec2(x, y).distance(Vec2(lightCellComponent.x, lightCellComponent.y));
+
+                    float k = (1.0 - distanceToLight / float(lightComponent.radius)); //light power is unused!
+                    totalLightColor.x += lightComponent.intensity.r * k;
+                    totalLightColor.y += lightComponent.intensity.g * k;
+                    totalLightColor.z += lightComponent.intensity.b * k;
+                }
+            });
+
+            totalLightColor = totalLightColor * 255;
+            finalColor.r = std::min<int>(totalLightColor.x + finalColor.r, 255);
+            finalColor.g = std::min<int>(totalLightColor.y + finalColor.g, 255);
+            finalColor.b = std::min<int>(totalLightColor.z + finalColor.b, 255);
+
+            controllableComponent.discoveredBlocks[y][x] = drawableComponent.currentFrame;
+
+            frameName = drawableComponent.currentFrame;
+
+        } else {
+            frameName = controllableComponent.discoveredBlocks[y][x];
+        }
+
+       _drawer->drawSpriteFrame(frameName, Vec2(x, y) * settings.cellSize, z, Size(settings.cellSize,settings.cellSize), finalColor);
+    }
+
     cocos2d::ui::ScrollView* _container;
     DrawTextureNode* _drawer;
 
