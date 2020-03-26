@@ -15,7 +15,7 @@ using std::map;
 
 #include "System.h"
 #include "../Events/Events.h"
-#include "../MenuState.h"
+#include "../ControllStates/NormalState.h"
 #include "../common.h"
 
 class ConfigurableKeyDispatcher {
@@ -55,16 +55,16 @@ private:
 class StateControllSystem: public ISystem, public IStateOwner {
 public:
     StateControllSystem(entt::registry& registry, entt::dispatcher& dispatcher) {
-        setState(make_shared<MenuNormalState>(_viewContainer), registry, dispatcher);
+        setState(make_shared<NormalControllState>(_viewContainer), registry, dispatcher);
 
         dispatcher.sink<UnprocessedKeyActionEvent>().connect<&StateControllSystem::onUnprocessedKeyActionEvent>(*this);
     }
 
     virtual void update(entt::registry& registry, entt::dispatcher& dispatcher, float delta) {
         _viewContainer.updateSystems(registry, dispatcher, delta);
-        _currentState->update(registry, dispatcher, delta);
+        _currentState->update(this, registry, dispatcher, delta);
         for(UnprocessedKeyActionEvent& event : _receivedEvents) {
-            _currentState->generateCommand(this, registry, dispatcher, event)->execute();
+            _currentState->handleInputEvent(this, registry, dispatcher, event)->execute();
         }
 
         _receivedEvents.clear();

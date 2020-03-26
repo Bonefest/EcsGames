@@ -1,16 +1,19 @@
-#include "Systems/GridRenderingSystem.h"
-#include "Systems/HintMessageView.h"
-#include "Systems/HUDSystem.h"
+#include "NormalState.h"
 
-#include "MenuState.h"
+#include "../Systems/GridRenderingSystem.h"
+#include "../Systems/LogRenderingView.h"
+#include "../Systems/HintMessageView.h"
+#include "../Systems/HUDSystem.h"
 
-#include "common.h"
+#include "../common.h"
 
-MenuNormalState::MenuNormalState(SystemContainer& container): _container(container) { }
+#include "AttackState.h"
 
-MenuNormalState::~MenuNormalState() { }
+NormalControllState::NormalControllState(SystemContainer& container): _container(container) { }
 
-void MenuNormalState::onEnter(entt::registry& registry, entt::dispatcher& dispatcher) {
+NormalControllState::~NormalControllState() { }
+
+void NormalControllState::onEnter(IStateOwner* owner, entt::registry& registry, entt::dispatcher& dispatcher) {
     Size visibleSize = Director::getInstance()->getVisibleSize();
 
     GameSettings& settings = registry.ctx<GameSettings>();
@@ -37,11 +40,14 @@ void MenuNormalState::onEnter(entt::registry& registry, entt::dispatcher& dispat
     dispatcher.trigger<HintMessageEvent>("<Normal mode>", Color3B::WHITE, 3.0f);
 }
 
-void MenuNormalState::update(entt::registry& registry, entt::dispatcher& dispatcher, float delta) {
+void NormalControllState::update(IStateOwner* owner, entt::registry& registry, entt::dispatcher& dispatcher, float delta) {
 
 }
 
-shared_ptr<Command> MenuNormalState::generateCommand(IStateOwner* stateOwner, entt::registry& registry, entt::dispatcher& dispatcher, const UnprocessedKeyActionEvent& event) {
+shared_ptr<Command> NormalControllState::handleInputEvent(IStateOwner* owner,
+                                                          entt::registry& registry,
+                                                          entt::dispatcher& dispatcher,
+                                                          const UnprocessedKeyActionEvent& event) {
         entt::entity player = entt::null;
         auto view = registry.view<Controllable>();
         for(entt::entity entity : view) {
@@ -49,7 +55,7 @@ shared_ptr<Command> MenuNormalState::generateCommand(IStateOwner* stateOwner, en
         }
 
         if(event.key == cocos2d::EventKeyboard::KeyCode::KEY_A) {
-            stateOwner->setState(make_shared<MenuAttackState>(_container), registry, dispatcher);
+            owner->setState(make_shared<AttackControllState>(_container), registry, dispatcher);
         }
 
         dispatcher.trigger<MessageEvent>("Lorem ipsum dolor glsdlglsd lgsdlglsd glsdl glsdl gsld glsdlglsdg lsdlgdslglsdlg lsdl gsldgldslgdslgldslgdslglsdgldslgldsglsdl", Color3B::RED);
@@ -70,29 +76,3 @@ shared_ptr<Command> MenuNormalState::generateCommand(IStateOwner* stateOwner, en
         return make_shared<NullCommand>();
 }
 
-////////////////////////////////////////////////////////
-
-
-MenuAttackState::MenuAttackState(SystemContainer& container): _container(container) { }
-
-MenuAttackState::~MenuAttackState() { }
-
-void MenuAttackState::update(entt::registry& registry, entt::dispatcher& dispatcher, float delta) {
-
-}
-
-void MenuAttackState::onEnter(entt::registry& registry, entt::dispatcher& dispatcher) {
-
-    _container.setEnabledSystem(Constants::ViewsTags::LogViewTag, false);
-
-    dispatcher.trigger<HintMessageEvent>("<Attack mode>\nChoose an enemy!", Color3B::WHITE, 3.0f);
-}
-
-shared_ptr<Command> MenuAttackState::generateCommand(IStateOwner* stateOwner, entt::registry& registry, entt::dispatcher& dispatcher, const UnprocessedKeyActionEvent& event) {
-    if(event.key == cocos2d::EventKeyboard::KeyCode::KEY_ESCAPE) {
-        stateOwner->setState(make_shared<MenuNormalState>(_container), registry, dispatcher);
-    }
-
-
-    return make_shared<NullCommand>();
-}
