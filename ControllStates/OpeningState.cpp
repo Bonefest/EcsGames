@@ -25,14 +25,14 @@ shared_ptr<Command> OpeningControllState::handleInputEvent(IStateOwner* owner,
     if(player != entt::null) {
 
         switch(event.keyType) {
-        case MOVE_TOP_LEFT:    command = make_shared<OpenCommand>(registry, dispatcher, player, Vec2(-1, 1)); break;
-        case MOVE_TOP:         command = make_shared<OpenCommand>(registry, dispatcher, player, Vec2( 0, 1)); break;
-        case MOVE_TOP_RIGHT:   command = make_shared<OpenCommand>(registry, dispatcher, player, Vec2( 1, 1)); break;
-        case MOVE_LEFT:        command = make_shared<OpenCommand>(registry, dispatcher, player, Vec2(-1, 0)); break;
-        case MOVE_RIGHT:       command = make_shared<OpenCommand>(registry, dispatcher, player, Vec2( 1, 0)); break;
-        case MOVE_BOTTOM_LEFT: command = make_shared<OpenCommand>(registry, dispatcher, player, Vec2(-1,-1)); break;
-        case MOVE_BOTTOM:      command = make_shared<OpenCommand>(registry, dispatcher, player, Vec2( 0,-1)); break;
-        case MOVE_BOTTOM_RIGHT:command = make_shared<OpenCommand>(registry, dispatcher, player, Vec2( 1,-1)); break;
+        case MOVE_TOP_LEFT:    command = make_shared<OpenCommand>(player, Vec2(-1, 1)); break;
+        case MOVE_TOP:         command = make_shared<OpenCommand>(player, Vec2( 0, 1)); break;
+        case MOVE_TOP_RIGHT:   command = make_shared<OpenCommand>(player, Vec2( 1, 1)); break;
+        case MOVE_LEFT:        command = make_shared<OpenCommand>(player, Vec2(-1, 0)); break;
+        case MOVE_RIGHT:       command = make_shared<OpenCommand>(player, Vec2( 1, 0)); break;
+        case MOVE_BOTTOM_LEFT: command = make_shared<OpenCommand>(player, Vec2(-1,-1)); break;
+        case MOVE_BOTTOM:      command = make_shared<OpenCommand>(player, Vec2( 0,-1)); break;
+        case MOVE_BOTTOM_RIGHT:command = make_shared<OpenCommand>(player, Vec2( 1,-1)); break;
         }
 
     }

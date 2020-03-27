@@ -62,6 +62,7 @@ public:
         _dispatcher->setKeyType(EventKeyboard::KeyCode::KEY_8, MOVE_TOP);
         _dispatcher->setKeyType(EventKeyboard::KeyCode::KEY_9, MOVE_TOP_RIGHT);
         _dispatcher->setKeyType(EventKeyboard::KeyCode::KEY_O, OPEN);
+        _dispatcher->setKeyType(EventKeyboard::KeyCode::KEY_C, CLOSE);
         _dispatcher->setKeyType(EventKeyboard::KeyCode::KEY_E, USE);
         _dispatcher->setKeyType(EventKeyboard::KeyCode::KEY_A, ATTACK);
 

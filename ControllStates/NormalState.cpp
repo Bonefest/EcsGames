@@ -9,6 +9,7 @@
 
 #include "AttackState.h"
 #include "OpeningState.h"
+#include "ClosingState.h"
 
 NormalControllState::NormalControllState(SystemContainer& container): _container(container) { }
 
@@ -59,20 +60,19 @@ shared_ptr<Command> NormalControllState::handleInputEvent(IStateOwner* owner,
             owner->setState(make_shared<AttackControllState>(_container), registry, dispatcher);
         }
 
-        dispatcher.trigger<MessageEvent>("Lorem ipsum dolor glsdlglsd lgsdlglsd glsdl glsdl gsld glsdlglsdg lsdlgdslglsdlg lsdl gsldgldslgdslgldslgdslglsdgldslgldsglsdl", Color3B::RED);
-
         assert(registry.valid(player) && "Unable to generate a command cause cannot find a controllable entity!");
 
         switch(event.keyType) {
-        case MOVE_TOP_LEFT:     return make_shared<MoveCommand>(registry, player, Vec2(-1,  1));
-        case MOVE_TOP:          return make_shared<MoveCommand>(registry, player, Vec2( 0,  1));
-        case MOVE_TOP_RIGHT:    return make_shared<MoveCommand>(registry, player, Vec2( 1,  1));
-        case MOVE_RIGHT:        return make_shared<MoveCommand>(registry, player, Vec2( 1,  0));
-        case MOVE_BOTTOM_RIGHT: return make_shared<MoveCommand>(registry, player, Vec2( 1, -1));
-        case MOVE_BOTTOM:       return make_shared<MoveCommand>(registry, player, Vec2( 0, -1));
-        case MOVE_BOTTOM_LEFT:  return make_shared<MoveCommand>(registry, player, Vec2(-1, -1));
-        case MOVE_LEFT:         return make_shared<MoveCommand>(registry, player, Vec2(-1,  0));
+        case MOVE_TOP_LEFT:     return make_shared<MoveCommand>(player, Vec2(-1,  1));
+        case MOVE_TOP:          return make_shared<MoveCommand>(player, Vec2( 0,  1));
+        case MOVE_TOP_RIGHT:    return make_shared<MoveCommand>(player, Vec2( 1,  1));
+        case MOVE_RIGHT:        return make_shared<MoveCommand>(player, Vec2( 1,  0));
+        case MOVE_BOTTOM_RIGHT: return make_shared<MoveCommand>(player, Vec2( 1, -1));
+        case MOVE_BOTTOM:       return make_shared<MoveCommand>(player, Vec2( 0, -1));
+        case MOVE_BOTTOM_LEFT:  return make_shared<MoveCommand>(player, Vec2(-1, -1));
+        case MOVE_LEFT:         return make_shared<MoveCommand>(player, Vec2(-1,  0));
         case OPEN:              owner->setState(make_shared<OpeningControllState>(_container), registry, dispatcher); break;
+        case CLOSE:             owner->setState(make_shared<ClosingControllState>(_container), registry, dispatcher); break;
         }
 
         return make_shared<NullCommand>();

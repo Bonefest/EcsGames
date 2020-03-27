@@ -64,7 +64,7 @@ public:
         _viewContainer.updateSystems(registry, dispatcher, delta);
         _currentState->update(this, registry, dispatcher, delta);
         for(UnprocessedKeyActionEvent& event : _receivedEvents) {
-            _currentState->handleInputEvent(this, registry, dispatcher, event)->execute();
+            _currentState->handleInputEvent(this, registry, dispatcher, event)->execute(registry, dispatcher);
         }
 
         _receivedEvents.clear();

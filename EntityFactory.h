@@ -25,6 +25,7 @@ public:
 
             Drawable& doorDrawableComponent = _registry.get<Drawable>(entity);
             doorDrawableComponent.animations.setAnimation(Constants::AnimationsTags::OpenedAnimationTag, EntityAnimation({"DoorOpen.png"}, 0.0f));
+            doorDrawableComponent.animations.setAnimation(Constants::AnimationsTags::ClosedAnimationTag, EntityAnimation({"DoorUnlighted.png"}, 0.0f));
 
         } else if(entityName == "wall") {
             entity = _registry.create();
