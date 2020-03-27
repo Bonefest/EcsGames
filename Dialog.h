@@ -1,52 +1,56 @@
 #ifndef DIALOG_H_INCLUDED
 #define DIALOG_H_INCLUDED
 
+#include <map>
+#include <vector>
+#include <memory>
+
 #include "common.h"
+#include "Dependencies/entt.hpp"
+
+using std::map;
+using std::vector;
+using std::shared_ptr;
 
 class Replica {
-	void useReplica(entt::registry& registry, entt::dispatcher& dispatcher, entt::entity replicaOwner) = 0;
+public:
+	virtual void useReplica(entt::registry& registry, entt::dispatcher& dispatcher, entt::entity replicaOwner) = 0;
 	Text getReplicaText() const;
 };
 
-class SwitchDialogReplica {
+class SwitchDialogReplica: public Replica {
 public:
-    SwitchDialogReplica(uint32_t dialogID, Text switchText): _dialogID(dialogID), _switchText(switchText) { }
-    void useReplica(entt::registrt& registry, entt::dispatcher& dispatcher, entt::entity replicaOwner) {
-        DialogManager& container = registry.ctx<DialogManager>();
-        container.setCurrentDialog(dialogID);
-        container.setCurrentText(_switchText);
-    }
-
+    SwitchDialogReplica(uint32_t dialogID, Text switchText, Text replicaText);
+    void useReplica(entt::registry& registry, entt::dispatcher& dispatcher, entt::entity replicaOwner);
+    Text getReplicaText() const ;
 private:
     uint32_t _dialogID;
     Text _switchText;
+    Text _replicaText;
 };
+
+//
+//class CloseDialogReplica: public Replica {
+//public:
+//    CloseDialogReplica(Text replicaText): _replicaText(replicaText) { }
+//
+//    void useReplica(entt::registry& registry, entt::dispatcher& dispatcher, entt::entity replicaOwner) {
+//        dispatcher.trigger<StateControllCommandEvent>(make_shared<ChangeStateCommand>(make_shared<NormalControllState>()));
+//    }
+//
+//    void getReplicaText() const {
+//        return _replicaText;
+//    }
+//};
 
 class Dialog {
 public:
-	void addReplica(shared_ptr<Replica> replica) {
-        _replicas.push_back(replica);
-	}
+	void addReplica(shared_ptr<Replica> replica);
+	void nextReplica();
+	void previousReplica();
+	shared_ptr<Replica> getCurrentReplica();
 
-	void nextReplica() {
-
-        if(!_replicas.empty() && _currentReplicaIndex == _replicas.size() - 1) _currentReplicaIndex = 0;
-	}
-
-	void previousReplica() {
-
-        if(!_replicas.empty() && _currentReplicaIndex == 0)  _currentReplicaIndex = _replicas.size() - 1;
-	}
-
-	shared_ptr<Replica> getCurrentReplica() {
-        if(_replicas.empty()) return nullptr;
-
-        return _replicas[_currentReplicaIndex];
-	}
-
-	const vector<shared_ptr<Replica>>& getAvailableReplicas() const() {
-        return _replicas;
-	}
+	const vector<shared_ptr<Replica>>& getAvailableReplicas() const;
 private:
 	vector<shared_ptr<Replica>> _replicas;
     std::size_t _currentReplicaIndex;
@@ -55,35 +59,29 @@ private:
 
 class DialogManager {
 public:
-	uint32_t setNewDialog(Dialog dialog, uint32_t dialogID) {
-        _dialogs[dialogID] = dialog;
-	}
+    DialogManager();
+	uint32_t setNewDialog(Dialog dialog, uint32_t dialogID);
 
-	Dialog& getDialog(uint32_t dialogID) {
-        return _dialogs[dialogID];
-	}
+	Dialog& getDialog(uint32_t dialogID);
 
-    bool hasDialog(uint32_t dialogID) {
-        return _dialogs.find(dialogID) != _dialogs.end();
-    }
+    bool hasDialog(uint32_t dialogID);
 
-    void setCurrentDialog(uint32_t dialogID) {
-        if(hasDialog(dialogID)) _currentDialog = dialogID;
-    }
+    void setCurrentDialog(uint32_t dialogID);
 
-    void setCurrentText(Text text) {
-        _currentText = text;
-    }
+    Dialog& getCurrentDialog();
 
-    Text getCurrentText() const {
-        return _currentText;
-    }
+    void setDialogPartner(entt::entity partner);
+    entt::entity getDialogPartner() const;
 
+    void setCurrentText(Text text);
+
+    Text getCurrentText() const;
 private:
 	map<uint32_t, Dialog> _dialogs;
 
 	uint32_t _currentDialog;
 	Text _currentText;
+	entt::entity _dialogPartner;
 };
 
 

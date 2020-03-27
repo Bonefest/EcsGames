@@ -54,28 +54,38 @@ private:
 
 class StateControllSystem: public ISystem, public IStateOwner {
 public:
-    StateControllSystem(entt::registry& registry, entt::dispatcher& dispatcher) {
-        setState(make_shared<NormalControllState>(_viewContainer), registry, dispatcher);
+    StateControllSystem(entt::registry& registry, entt::dispatcher& dispatcher): IStateOwner() {
+        setState(make_shared<NormalControllState>(), registry, dispatcher);
 
         dispatcher.sink<UnprocessedKeyActionEvent>().connect<&StateControllSystem::onUnprocessedKeyActionEvent>(*this);
+        dispatcher.sink<StateControllCommandEvent>().connect<&StateControllSystem::onStateControllCommandEvent>(*this);
     }
 
     virtual void update(entt::registry& registry, entt::dispatcher& dispatcher, float delta) {
-        _viewContainer.updateSystems(registry, dispatcher, delta);
+        _viewContainer->updateSystems(registry, dispatcher, delta);
         _currentState->update(this, registry, dispatcher, delta);
-        for(UnprocessedKeyActionEvent& event : _receivedEvents) {
-            _currentState->handleInputEvent(this, registry, dispatcher, event)->execute(registry, dispatcher);
+        for(UnprocessedKeyActionEvent& event : _receivedKeyEvents) {
+            _currentState->handleInputEvent(this, registry, dispatcher, event)->execute(this, registry, dispatcher);
         }
 
-        _receivedEvents.clear();
+        for(auto command : _receivedCommands) {
+            command->execute(this, registry, dispatcher);
+        }
+
+        _receivedKeyEvents.clear();
     }
 
     void onUnprocessedKeyActionEvent(const UnprocessedKeyActionEvent& event) {
-        _receivedEvents.push_back(event);
+        _receivedKeyEvents.push_back(event);
+    }
+
+    void onStateControllCommandEvent(const StateControllCommandEvent& event) {
+        _receivedCommands.push_back(event.command);
     }
 
 private:
-    vector<UnprocessedKeyActionEvent> _receivedEvents;
+    vector<UnprocessedKeyActionEvent> _receivedKeyEvents;
+    vector<shared_ptr<Command>> _receivedCommands;
 
 };
 

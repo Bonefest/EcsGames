@@ -11,11 +11,14 @@ using std::shared_ptr;
 #include "../Command.h"
 #include "../Events/Events.h"
 
+#include "../Dependencies/entt.hpp"
+
 struct UnprocessedKeyActionEvent;
 
 typedef uint32_t tag;
 
 class IStateOwner;
+class Command;
 
 class ControllState {
 public:

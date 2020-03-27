@@ -7,7 +7,6 @@
 
 class NormalControllState: public ControllState {
 public:
-    NormalControllState(SystemContainer& container);
     virtual ~NormalControllState();
 
     virtual void onEnter(IStateOwner* owner, entt::registry& registry, entt::dispatcher& dispatcher);
@@ -16,8 +15,6 @@ public:
                                                 entt::registry& registry,
                                                 entt::dispatcher& dispatcher,
                                                 const UnprocessedKeyActionEvent& event);
-private:
-    SystemContainer& _container;
 };
 
 

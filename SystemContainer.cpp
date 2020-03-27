@@ -38,8 +38,8 @@ shared_ptr<ISystem> SystemContainer::findSystem(uint32_t tag) {
 
     return nullptr;
 }
-
-void SystemContainer::onEnableSystemEvent(const EnableSystemEvent& event) {
-    setEnabledSystem(event.tag, event.enabled);
-}
+//
+//void SystemContainer::onEnableSystemEvent(const EnableSystemEvent& event) {
+//    setEnabledSystem(event.tag, event.enabled);
+//}
 

@@ -17,6 +17,7 @@ public:
             _registry.assign<Cell>(entity);
             _registry.assign<Destroyable>(entity, 100.0f, 0.0f, 0.0f);
             _registry.assign<Lockable>(entity, 0);
+            _registry.assign<Speakable>(entity);
 
             Cell& doorCellComponent = _registry.get<Cell>(entity);
             doorCellComponent.passable = false;

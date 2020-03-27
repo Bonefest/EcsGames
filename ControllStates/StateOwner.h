@@ -5,14 +5,16 @@
 #include "../SystemContainer.h"
 
 class ControllState;
+class SystemContainer;
 
 class IStateOwner {
 public:
+    IStateOwner();
     void setState(shared_ptr<ControllState> state, entt::registry& registry, entt::dispatcher& dispatcher);
-    SystemContainer& getViewContainer() { return _viewContainer; }
+    SystemContainer& getViewContainer() { return *_viewContainer; }
 protected:
     shared_ptr<ControllState> _currentState;
-    SystemContainer _viewContainer;
+    shared_ptr<SystemContainer> _viewContainer;
 };
 
 

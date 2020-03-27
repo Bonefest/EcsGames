@@ -3,6 +3,8 @@
 
 #include "../Events/Events.h"
 
+#include "../helper.h"
+
 void ClosingControllState::onEnter(IStateOwner* owner, entt::registry& registry, entt::dispatcher& dispatcher) {
     dispatcher.trigger<HintMessageEvent>(Text{"<Open mode>\nChoose closing direction", Color3B::WHITE}, 3.0f);
 }
@@ -24,19 +26,12 @@ shared_ptr<Command> ClosingControllState::handleInputEvent(IStateOwner* owner,
 
     if(player != entt::null) {
 
-        switch(event.keyType) {
-        case MOVE_TOP_LEFT:    command = make_shared<CloseCommand>(player, Vec2(-1, 1)); break;
-        case MOVE_TOP:         command = make_shared<CloseCommand>(player, Vec2( 0, 1)); break;
-        case MOVE_TOP_RIGHT:   command = make_shared<CloseCommand>(player, Vec2( 1, 1)); break;
-        case MOVE_LEFT:        command = make_shared<CloseCommand>(player, Vec2(-1, 0)); break;
-        case MOVE_RIGHT:       command = make_shared<CloseCommand>(player, Vec2( 1, 0)); break;
-        case MOVE_BOTTOM_LEFT: command = make_shared<CloseCommand>(player, Vec2(-1,-1)); break;
-        case MOVE_BOTTOM:      command = make_shared<CloseCommand>(player, Vec2( 0,-1)); break;
-        case MOVE_BOTTOM_RIGHT:command = make_shared<CloseCommand>(player, Vec2( 1,-1)); break;
+        if(isDirectionKeyType(event.keyType)) {
+            command = make_shared<CloseCommand>(player, directionKeyTypeToVector(event.keyType));
         }
 
     }
 
-    owner->setState(make_shared<NormalControllState>(_container), registry, dispatcher);
+    owner->setState(make_shared<NormalControllState>(), registry, dispatcher);
     return command;
 }

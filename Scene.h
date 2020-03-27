@@ -14,6 +14,8 @@
 #include "EntityFactory.h"
 #include "InputHandler.h"
 
+#include "Dialog.h"
+
 #include <memory>
 
 USING_NS_CC;
@@ -61,10 +63,12 @@ public:
         _dispatcher->setKeyType(EventKeyboard::KeyCode::KEY_7, MOVE_TOP_LEFT);
         _dispatcher->setKeyType(EventKeyboard::KeyCode::KEY_8, MOVE_TOP);
         _dispatcher->setKeyType(EventKeyboard::KeyCode::KEY_9, MOVE_TOP_RIGHT);
+        _dispatcher->setKeyType(EventKeyboard::KeyCode::KEY_ESCAPE, CANCEL);
         _dispatcher->setKeyType(EventKeyboard::KeyCode::KEY_O, OPEN);
         _dispatcher->setKeyType(EventKeyboard::KeyCode::KEY_C, CLOSE);
         _dispatcher->setKeyType(EventKeyboard::KeyCode::KEY_E, USE);
         _dispatcher->setKeyType(EventKeyboard::KeyCode::KEY_A, ATTACK);
+        _dispatcher->setKeyType(EventKeyboard::KeyCode::KEY_T, TALK);
 
 
 
@@ -112,6 +116,7 @@ private:
         registry.set<EntityFactory>(registry);
         registry.set<GameSettings>(32.0f, uint16_t(24), uint16_t(24), Color4B(40, 40, 40, 255));
         registry.set<WorldData>();
+        registry.set<DialogManager>();
     }
 
     void initSystems() {

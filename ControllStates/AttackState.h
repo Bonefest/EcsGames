@@ -6,7 +6,6 @@
 
 class AttackControllState: public ControllState {
 public:
-    AttackControllState(SystemContainer& container);
     virtual ~AttackControllState();
 
     virtual void onEnter(IStateOwner* owner, entt::registry& registry, entt::dispatcher& dispatcher);
@@ -15,9 +14,6 @@ public:
                                                  entt::registry& registry,
                                                  entt::dispatcher& dispatcher,
                                                  const UnprocessedKeyActionEvent& event);
-
-private:
-    SystemContainer& _container;
 
 };
 

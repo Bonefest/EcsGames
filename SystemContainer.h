@@ -27,7 +27,7 @@ public:
     void setEnabledSystem(uint32_t tag, bool enabled);
     shared_ptr<ISystem> findSystem(uint32_t tag);
 
-    void onEnableSystemEvent(const EnableSystemEvent& event);
+    //void onEnableSystemEvent(const EnableSystemEvent& event);
 
 private:
     map<uint32_t, SystemInfo> _systems;

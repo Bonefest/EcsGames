@@ -3,20 +3,22 @@
 
 
 #include <string>
+#include <memory>
 
 #include "cocos2d.h"
 #include "../common.h"
 
 using namespace cocos2d;
 using std::string;
+using std::shared_ptr;
 
-
-struct EnableSystemEvent {
-    EnableSystemEvent(uint32_t systemTag, bool systemEnabled): tag(systemTag), enabled(systemEnabled) { }
-
-    uint32_t tag;
-    bool enabled;
-};
+//
+//struct EnableSystemEvent {
+//    EnableSystemEvent(uint32_t systemTag, bool systemEnabled): tag(systemTag), enabled(systemEnabled) { }
+//
+//    uint32_t tag;
+//    bool enabled;
+//};
 
 //Можно заменить одной структурой, но я решил оставить так для возможности разделения событий на 2 метода
 struct KeyPressedEvent {
@@ -50,6 +52,16 @@ struct UnprocessedKeyActionEvent {
 
     EventKeyboard::KeyCode key;
     KeyType keyType;
+};
+
+#include "../Command.h"
+
+class Command;
+
+struct StateControllCommandEvent {
+    StateControllCommandEvent(shared_ptr<Command> newCommand): command(newCommand) { }
+
+    shared_ptr<Command> command;
 };
 
 #endif // EVENTS_H_INCLUDED

@@ -1,6 +1,7 @@
 #ifndef COMMON_H_INCLUDED
 #define COMMON_H_INCLUDED
 
+#include "cocos2d.h"
 #include <string>
 
 enum KeyType {
@@ -18,10 +19,10 @@ enum KeyType {
     OPEN,
     CLOSE,
     ATTACK,
+    TALK,
 
     UNRESOLVED
 };
-
 
 namespace Constants {
 

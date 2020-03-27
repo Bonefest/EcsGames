@@ -188,3 +188,38 @@ std::string cutMessage(const std::string& message, float fontSize, float viewWid
 bool isValidPosition(uint16_t x, uint16_t y) {
     return (x >= 0 && y >=0 && x < Constants::MAP_WIDTH && y < Constants::MAP_HEIGHT);
 }
+
+
+bool isDirectionKeyType(KeyType type) {
+    return type >= MOVE_TOP_LEFT && type <= MOVE_LEFT;
+}
+
+Vec2 directionKeyTypeToVector(KeyType type) {
+    if(isDirectionKeyType(type)) {
+        switch(type) {
+        case MOVE_TOP_LEFT: return Vec2(-1, 1);
+        case MOVE_TOP: return Vec2(0, 1);
+        case MOVE_TOP_RIGHT: return Vec2(1, 1);
+        case MOVE_RIGHT: return Vec2(1, 0);
+        case MOVE_BOTTOM_RIGHT: return Vec2(1, -1);
+        case MOVE_BOTTOM: return Vec2(0, -1);
+        case MOVE_BOTTOM_LEFT: return Vec2(-1, -1);
+        case MOVE_LEFT: return Vec2(-1, 0);
+        }
+    }
+
+    return Vec2::ZERO;
+}
+
+std::string directionVectorToString(Vec2 direction) {
+    if(direction.x == -1 && direction.y ==  1)  return "north-west";
+    if(direction.x ==  0 && direction.y ==  1)  return "north";
+    if(direction.x ==  1 && direction.y ==  1)  return "north-east";
+    if(direction.x ==  1 && direction.y ==  0)  return "east";
+    if(direction.x ==  1 && direction.y == -1)  return "south-east";
+    if(direction.x ==  0 && direction.y == -1)  return "south";
+    if(direction.x == -1 && direction.y == -1)  return "south-west";
+    if(direction.x == -1 && direction.y ==  0)  return "west";
+
+    return "";
+}
