@@ -117,14 +117,14 @@ bool isVisible(entt::registry& registry,
 }
 
 
-std::string cutMessage(const std::string& message, float fontSize, float viewWidth) {
+std::string cutMessage2(const std::string& message, float fontSize, float viewWidth) {
     std::string result = "";
 
     int splitNumber = std::ceil(message.size() * (fontSize + 1.0f) / viewWidth);
     int maxLineChars = viewWidth / (fontSize + 1.0f);
 
     int graphCharsCounter = 0;
-    cocos2d::log("%d", maxLineChars);
+    //cocos2d::log("%d", maxLineChars);
     for(size_t i = 0;i < message.size(); ++i) {
         if(message[i] != '\n') graphCharsCounter++;
         else graphCharsCounter = 0;
@@ -135,6 +135,53 @@ std::string cutMessage(const std::string& message, float fontSize, float viewWid
             graphCharsCounter = 0;
         }
     }
+    return result;
+}
+
+#include <sstream>
+
+std::string cutMessage(const std::string& message, float fontSize, float viewWidth) {
+    std::string result = "";
+
+    int maxLineChars = viewWidth / (fontSize + 1.0f);
+
+    std::stringstream sstream(message);
+    std::string line = "";
+
+    int scannedLines = 0;
+    int scannedLineChars = 0;
+    while(std::getline(sstream, line)) {
+        if(scannedLines > 0) result += "\n";
+
+        std::size_t spaceDelimPos = 0;
+        std::size_t previousDelimPos = 0;
+        while( spaceDelimPos != line.size() && (spaceDelimPos = line.find(" ", previousDelimPos))) {
+            if(spaceDelimPos == std::string::npos) spaceDelimPos = line.size();
+
+            std::string word = line.substr(previousDelimPos, spaceDelimPos - previousDelimPos);
+            if(scannedLineChars + word.size() >= maxLineChars) {
+                result += "\n";
+                while(word.size() > maxLineChars) {
+                    result += word.substr(0, maxLineChars);
+                    word = word.substr(maxLineChars);
+                    result += "\n";
+                }
+
+                scannedLineChars = word.size() + 1;
+            } else {
+
+                scannedLineChars += word.size() + 1;
+            }
+
+            result += word + " ";
+
+            previousDelimPos = spaceDelimPos + 1;
+        }
+
+        scannedLines++;
+        scannedLineChars = 0;
+    }
+
     return result;
 }
 
