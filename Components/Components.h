@@ -5,6 +5,8 @@
 #include "../common.h"
 #include "../Animation.h"
 #include "../StateSprite.h"
+#include "../EntityRelationStatus.h"
+
 #include "../Dependencies/entt.hpp"
 
 #include <string>
@@ -99,6 +101,12 @@ struct Lockable {
 
     uint8_t lockLevel;
 
+};
+
+struct Speakable {
+    explicit Speakable() { }
+
+    EntityRelationStatus status;
 };
 
 struct GameSettings {

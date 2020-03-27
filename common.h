@@ -44,5 +44,10 @@ namespace Constants {
     const std::string StandardFontName = "fonts/PressStart2P.ttf";
 }
 
+struct Text {
+    std::string text;
+    cocos2d::Color3B textColor;
+};
+
 
 #endif // COMMON_H_INCLUDED

@@ -13,7 +13,7 @@ void AttackControllState::onEnter(IStateOwner* owner, entt::registry& registry, 
 
     _container.setEnabledSystem(Constants::ViewsTags::LogViewTag, false);
 
-    dispatcher.trigger<HintMessageEvent>("<Attack mode>\nChoose an enemy!", Color3B::WHITE, 3.0f);
+    dispatcher.trigger<HintMessageEvent>(Text{"<Attack mode>\nChoose an enemy!", Color3B::WHITE}, 3.0f);
 }
 
 shared_ptr<Command> AttackControllState::handleInputEvent(IStateOwner* stateOwner, entt::registry& registry, entt::dispatcher& dispatcher, const UnprocessedKeyActionEvent& event) {

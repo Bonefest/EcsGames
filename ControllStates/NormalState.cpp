@@ -39,7 +39,7 @@ void NormalControllState::onEnter(IStateOwner* owner, entt::registry& registry, 
     _container.setEnabledSystem(Constants::ViewsTags::LogViewTag,  true);
     _container.setEnabledSystem(Constants::ViewsTags::HintViewTag, true);
 
-    dispatcher.trigger<HintMessageEvent>("<Normal mode>", Color3B::WHITE, 3.0f);
+    dispatcher.trigger<HintMessageEvent>(Text{"<Normal mode>", Color3B::WHITE}, 3.0f);
 }
 
 void NormalControllState::update(IStateOwner* owner, entt::registry& registry, entt::dispatcher& dispatcher, float delta) {

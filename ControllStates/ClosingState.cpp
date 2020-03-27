@@ -4,7 +4,7 @@
 #include "../Events/Events.h"
 
 void ClosingControllState::onEnter(IStateOwner* owner, entt::registry& registry, entt::dispatcher& dispatcher) {
-    dispatcher.trigger<HintMessageEvent>("<Open mode>\nChoose closing direction", Color3B::WHITE, 3.0f);
+    dispatcher.trigger<HintMessageEvent>(Text{"<Open mode>\nChoose closing direction", Color3B::WHITE}, 3.0f);
 }
 
 shared_ptr<Command> ClosingControllState::handleInputEvent(IStateOwner* owner,

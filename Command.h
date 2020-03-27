@@ -95,7 +95,7 @@ public:
                     Lockable& doorLockableComponent = registry.get<Lockable>(doorEntity);
 
                     if(doorCellComponent.passable) {
-                        dispatcher.trigger<MessageEvent>(StringUtils::format("<%s> is open!", doorCellComponent.name.c_str()), Color3B::WHITE);
+                        dispatcher.trigger<MessageEvent>(Text{StringUtils::format("<%s> is open!", doorCellComponent.name.c_str()), Color3B::WHITE});
                     } else {
                         //Some logic about opening duration (calculated with player locking skill and so on)
                         //and some logic about failing to open a door (don't have a key)
@@ -104,13 +104,13 @@ public:
                         doorCellComponent.transparent = true;
                         doorDrawableComponent.animations.setCurrentState(Constants::AnimationsTags::OpenedAnimationTag);
 
-                        dispatcher.trigger<MessageEvent>(StringUtils::format("You have opened <%s>", doorCellComponent.name.c_str()), Color3B::GREEN);
+                        dispatcher.trigger<MessageEvent>(Text{StringUtils::format("You have opened <%s>", doorCellComponent.name.c_str()), Color3B::GREEN});
                     }
                 }
             }
 
             if(doorEntity == entt::null) {
-                dispatcher.trigger<MessageEvent>("There is nothing to open!", Color3B::WHITE);
+                dispatcher.trigger<MessageEvent>(Text{"There is nothing to open!", Color3B::WHITE});
             }
         }
     }
@@ -151,7 +151,7 @@ public:
                     Lockable& doorLockableComponent = registry.get<Lockable>(doorEntity);
 
                     if(!doorCellComponent.passable) {
-                        dispatcher.trigger<MessageEvent>(StringUtils::format("<%s> is closed!", doorCellComponent.name.c_str()), Color3B::WHITE);
+                        dispatcher.trigger<MessageEvent>(Text{StringUtils::format("<%s> is closed!", doorCellComponent.name.c_str()), Color3B::WHITE});
                     } else {
                         //Some logic about opening duration (calculated with player locking skill and so on)
                         //and some logic about failing to open a door (don't have a key)
@@ -160,13 +160,13 @@ public:
                         doorCellComponent.transparent = false;  //if door is not initially transparent = set transparent = false else leave unchanged;
                         doorDrawableComponent.animations.setCurrentState(Constants::AnimationsTags::ClosedAnimationTag);
 
-                        dispatcher.trigger<MessageEvent>(StringUtils::format("You have closed <%s>", doorCellComponent.name.c_str()), Color3B::GREEN);
+                        dispatcher.trigger<MessageEvent>(Text{StringUtils::format("You have closed <%s>", doorCellComponent.name.c_str()), Color3B::GREEN});
                     }
                 }
             }
 
             if(doorEntity == entt::null) {
-                dispatcher.trigger<MessageEvent>("There is nothing to close!", Color3B::WHITE);
+                dispatcher.trigger<MessageEvent>(Text{"There is nothing to close!", Color3B::WHITE});
             }
         }
     }

@@ -95,12 +95,12 @@ public:
 
         }
 
-        cocos2d::ui::Text* newText = cocos2d::ui::Text::create(cutMessage(messageEvent.message, 12.0f, _size.width),
-                                                                Constants::StandardFontName,
-                                                                12.0f);
+        cocos2d::ui::Text* newText = cocos2d::ui::Text::create(cutMessage(messageEvent.message.text, 12.0f, _size.width),
+                                                                          Constants::StandardFontName,
+                                                                          12.0f);
         newText->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
         newText->setPosition(Vec2::ZERO);
-        newText->setColor(messageEvent.textColor);
+        newText->setColor(messageEvent.message.textColor);
 
         _scroller->addChild(newText);
 

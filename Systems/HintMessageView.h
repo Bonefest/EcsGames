@@ -50,8 +50,8 @@ public:
     }
 
     void onHintMessageEvent(const HintMessageEvent& event) {
-        _hintText->setString(cutMessage(event.hint, _hintText->getFontSize(), _hintRect.size.width));
-        _hintText->setColor(event.textColor);
+        _hintText->setString(cutMessage(event.hint.text, _hintText->getFontSize(), _hintRect.size.width));
+        _hintText->setColor(event.hint.textColor);
 
         _textLifetime = event.lifetime;
         _elapsedTime = 0.0f;

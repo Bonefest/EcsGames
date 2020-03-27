@@ -32,21 +32,16 @@ struct KeyReleasedEvent {
 };
 
 struct MessageEvent {
-    explicit MessageEvent(const string& actionDescription, Color3B color): message(actionDescription),
-                                                                           textColor(color) { }
+    explicit MessageEvent(Text messageText): message(messageText) { }
     uint32_t channel;
-    string  message;
-    Color3B textColor;
+    Text message;
 };
 
 struct HintMessageEvent {
-    explicit HintMessageEvent(string hintMessage, Color3B hintColor, float hintLifetime): hint(hintMessage),
-                                                                                          textColor(hintColor),
-                                                                                          lifetime(hintLifetime) { }
+    explicit HintMessageEvent(Text hintText, float hintLifetime): hint(hintText),
+                                                                  lifetime(hintLifetime) { }
 
-
-    string hint;
-    Color3B textColor;
+    Text hint;
     float lifetime;
 };
 
