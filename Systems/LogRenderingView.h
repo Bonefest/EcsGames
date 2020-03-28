@@ -74,6 +74,16 @@ public:
         reallignText();
     }
 
+    void onEnable() {
+        _scrollbar->setVisible(true);
+        _scrollbar->setEnabled(true);
+    }
+
+    void onDisable() {
+        _scrollbar->setVisible(false);
+        _scrollbar->setEnabled(false);
+    }
+
 private:
     void reallignText() {
         if(!_scrollbarText.empty()) {

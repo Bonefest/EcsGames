@@ -57,6 +57,16 @@ public:
         _elapsedTime = 0.0f;
     }
 
+    void onEnable() {
+        _hintText->setEnabled(true);
+        _hintText->setVisible(true);
+    }
+
+    void onDisable() {
+        _hintText->setEnabled(false);
+        _hintText->setVisible(false);
+    }
+
 private:
     entt::dispatcher& _dispatcher;
     cocos2d::ui::Text* _hintText;

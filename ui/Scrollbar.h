@@ -74,10 +74,7 @@ public:
     bool onTouchBegan(Touch* touch, Event* event) {
         bool result = ScrollView::onTouchBegan(touch, event);
 
-        log("%f %f", touch->getLocation().x, touch->getLocation().y);
-        log("%f %f %f %f", _position.x, _position.y, _contentSize.width, _contentSize.height);
         if(Rect(_position + Vec2(-16, 16), Size(16, _contentSize.height - 16)).containsPoint(touch->getLocation())) {
-            cocos2d::log("click");
             _barFocused = true;
         }
 
@@ -89,10 +86,11 @@ public:
     void onTouchMoved(Touch* touch, Event* event) {
         ScrollView::onTouchMoved(touch, event);
         if(_barFocused) {
-            float y = -touch->getLocation().y;
-
-            setInnerContainerPosition(Vec2(getInnerContainerPosition().x, y));
-            log("moved");
+            float k = (touch->getLocation().y - _position.y - 16) / (_contentSize.height - 32.0f);
+            float y = k * getInnerContainerSize().height;
+            y = std::max(0.0f, y);
+            y = std::min(getInnerContainerSize().height - getContentSize().height, y);
+            setInnerContainerPosition(Vec2(getInnerContainerPosition().x, -y));
         }
     }
 
@@ -120,8 +118,9 @@ public:
         Vec2 barOriginPos(_position.x - 16.0f , k * abs(scrollerInnerPos.y) + 16 + _position.y);
         Vec2 barDestPos(_position.x, k * abs(scrollerInnerPos.y) + barHeight + _position.y);
 
+        Color4F barColor = (_barFocused) ? Color4F(0.717f, 0.56f, 0.482f, 1.0f) : Color4F(0.717f, 0.56f, 0.482f, 0.6f);
         _barDrawer->drawSolidRect(Vec2(-16.0f + _position.x, 16.0f + _position.y), Vec2(_position.x, scrollerContentSize.height - 16 + _position.y), Color4F(0.556f, 0.435f, 0.372f, 1.0f));
-        _barDrawer->drawSolidRect(barOriginPos, barDestPos, Color4F(0.717f, 0.56f, 0.482f, 1.0f));
+        _barDrawer->drawSolidRect(barOriginPos, barDestPos, barColor);
     }
 
     void setContentSize(const Size& size) {
@@ -142,10 +141,10 @@ public:
     }
 
     void removeFromParentAndCleanup(bool remove) {
-        cocos2d::ui::ScrollView::removeFromParentAndCleanup(true);
+        cocos2d::ui::ScrollView::removeFromParentAndCleanup(remove);
         _upButton->removeFromParentAndCleanup(remove);
-        _rightButton->removeFromParentAndCleanup(remove);
-        _barDrawer->removeFromParentAndCleanup(true);
+        _downButton->removeFromParentAndCleanup(remove);
+        _barDrawer->removeFromParentAndCleanup(remove);
     }
 
 
@@ -180,6 +179,20 @@ public:
             setInnerContainerPosition(Vec2(currentPosition.x, std::max(-innerContainerSize.height + getContentSize().height, currentPosition.y - 20)));
         }
 
+    }
+
+    void setVisible(bool visible) {
+        ScrollView::setVisible(visible);
+        _upButton->setVisible(visible);
+        _downButton->setVisible(visible);
+        _barDrawer->setVisible(visible);
+    }
+
+    void setEnabled(bool enabled) {
+        ScrollView::setEnabled(enabled);
+        _upButton->setEnabled(enabled);
+        _downButton->setEnabled(enabled);
+        _barDrawer->setVisible(enabled);
     }
 
 private:

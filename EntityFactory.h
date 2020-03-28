@@ -24,6 +24,10 @@ public:
             doorCellComponent.transparent = false;
             doorCellComponent.name = "Wooden door";
 
+            Speakable& doorSpeakableComponent = _registry.get<Speakable>(entity);
+            doorSpeakableComponent.status.setStatusDialog(0, StatusInfo{Constants::DialogsTags::DoorDialog, Text{"Hallo, it's a greeting text", Color3B::YELLOW}});
+            doorSpeakableComponent.status.setCurrentStatus(0);
+
             Drawable& doorDrawableComponent = _registry.get<Drawable>(entity);
             doorDrawableComponent.animations.setAnimation(Constants::AnimationsTags::OpenedAnimationTag, EntityAnimation({"DoorOpen.png"}, 0.0f));
             doorDrawableComponent.animations.setAnimation(Constants::AnimationsTags::ClosedAnimationTag, EntityAnimation({"DoorUnlighted.png"}, 0.0f));

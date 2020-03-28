@@ -27,8 +27,14 @@ void SystemContainer::removeSystem(uint32_t tag) {
 
 void SystemContainer::setEnabledSystem(uint32_t tag, bool enabled) {
     auto systemIter = _systems.find(tag);
-    if(systemIter != _systems.end())
-        _systems[tag].enabled = enabled;
+    if(systemIter != _systems.end()) {
+        if(_systems[tag].enabled != enabled) {
+            if(_systems[tag].enabled == false) _systems[tag].system->onEnable();
+            else _systems[tag].system->onDisable();
+
+            _systems[tag].enabled = enabled;
+        }
+    }
 }
 
 shared_ptr<ISystem> SystemContainer::findSystem(uint32_t tag) {
@@ -38,6 +44,17 @@ shared_ptr<ISystem> SystemContainer::findSystem(uint32_t tag) {
 
     return nullptr;
 }
+
+bool SystemContainer::hasSystem(uint32_t tag) {
+    return _systems.find(tag) != _systems.end();
+}
+
+void SystemContainer::setEnabledAllSystems(bool enabled) {
+    for(auto systemInfo : _systems) {
+        setEnabledSystem(systemInfo.first, enabled);
+    }
+}
+
 //
 //void SystemContainer::onEnableSystemEvent(const EnableSystemEvent& event) {
 //    setEnabledSystem(event.tag, event.enabled);

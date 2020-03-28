@@ -78,6 +78,19 @@ public:
         }
     }
 
+    void onEnable() {
+        _container->setEnabled(true);
+        _container->setVisible(true);
+
+        _drawer->setVisible(true);
+    }
+
+    void onDisable() {
+        _container->setEnabled(false);
+        _container->setVisible(false);
+
+        _drawer->setVisible(false);
+    }
 
 private:
     void drawCell(entt::registry& registry, entt::entity cell,

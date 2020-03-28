@@ -50,6 +50,7 @@ public:
 
         initContext();
         initSystems();
+        initDialogs();
 
         generateMap();
 
@@ -122,6 +123,24 @@ private:
     void initSystems() {
         _systemManager.getContainer().addSystem(make_shared<StateControllSystem>(_systemManager.getRegistry(),
                                                                                  _systemManager.getDispatcher()));
+    }
+
+    void initDialogs() {
+        DialogManager& manager = _systemManager.getRegistry().ctx<DialogManager>();
+        Dialog doorDialog;
+        doorDialog.addReplica(make_shared<SwitchDialogReplica>(Constants::DialogsTags::DoorDialog, Text{"Whou are you?", Color3B::WHITE}, Text{"I'm a door!", Color3B::WHITE}));
+        doorDialog.addReplica(make_shared<SwitchDialogReplica>(Constants::DialogsTags::DoorDialog, Text{"How about super-duper long long mega long replica and response?", Color3B::WHITE}, Text{"It's my own super-duper own long answer for your super-duper long long question"
+                                                                                                                                                                                                 "probably it's not that long as you expected but anyway it's too useful sentence"
+                                                                                                                                                                                                 "isn't it? I've just answered almost any of your questions at only one word or i`"
+                                                                                                                                                                                                 "ve missed something? I hope i did not *smile*. Your task for today - bring me fi"
+                                                                                                                                                                                                 "ve skeletal bones and i'll give your something special!\n"
+                                                                                                                                                                                                 "It's my own super-duper own long answer for your super-duper long long question"
+                                                                                                                                                                                                 "probably it's not that long as you expected but anyway it's too useful sentence"
+                                                                                                                                                                                                 "isn't it? I've just answered almost any of your questions at only one word or i`"
+                                                                                                                                                                                                 "ve missed something? I hope i did not *smile*. Your task for today - bring me fi"
+                                                                                                                                                                                                 "ve skeletal bones and i'll give your something special!", Color3B::GREEN}));
+        doorDialog.addReplica(make_shared<SwitchDialogReplica>(Constants::DialogsTags::DoorDialog, Text{"Who am i?", Color3B::WHITE}, Text{"You are an entity!", Color3B::WHITE}));
+        manager.setNewDialog(doorDialog, Constants::DialogsTags::DoorDialog);
     }
 
     void generateMap() {

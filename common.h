@@ -34,12 +34,17 @@ namespace Constants {
         LogViewTag,
         HintViewTag,
         InventoryViewTag,
+        DialogViewTag,
     };
 
     enum AnimationsTags {
         BaseAnimationTag,
         OpenedAnimationTag,
         ClosedAnimationTag,
+    };
+
+    enum DialogsTags {
+        DoorDialog,
     };
 
     const std::string StandardFontName = "fonts/PressStart2P.ttf";

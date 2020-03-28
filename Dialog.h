@@ -15,14 +15,14 @@ using std::shared_ptr;
 class Replica {
 public:
 	virtual void useReplica(entt::registry& registry, entt::dispatcher& dispatcher, entt::entity replicaOwner) = 0;
-	Text getReplicaText() const;
+	virtual Text getReplicaText() const { }
 };
 
 class SwitchDialogReplica: public Replica {
 public:
     SwitchDialogReplica(uint32_t dialogID, Text switchText, Text replicaText);
     void useReplica(entt::registry& registry, entt::dispatcher& dispatcher, entt::entity replicaOwner);
-    Text getReplicaText() const ;
+    Text getReplicaText() const;
 private:
     uint32_t _dialogID;
     Text _switchText;
@@ -45,9 +45,11 @@ private:
 
 class Dialog {
 public:
+    Dialog();
 	void addReplica(shared_ptr<Replica> replica);
 	void nextReplica();
 	void previousReplica();
+	std::size_t getCurrentReplicaIndex() const;
 	shared_ptr<Replica> getCurrentReplica();
 
 	const vector<shared_ptr<Replica>>& getAvailableReplicas() const;
@@ -61,6 +63,7 @@ class DialogManager {
 public:
     DialogManager();
 	uint32_t setNewDialog(Dialog dialog, uint32_t dialogID);
+	uint32_t getCurrentDialogID() const;
 
 	Dialog& getDialog(uint32_t dialogID);
 
@@ -74,7 +77,6 @@ public:
     entt::entity getDialogPartner() const;
 
     void setCurrentText(Text text);
-
     Text getCurrentText() const;
 private:
 	map<uint32_t, Dialog> _dialogs;

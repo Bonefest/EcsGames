@@ -8,6 +8,8 @@ public:
 	virtual ~ISystem() { }
 	virtual void start(entt::registry& registry, entt::dispatcher& dispatcher) { }
 	virtual void update(entt::registry& registry, entt::dispatcher& dispatcher, float delta) = 0;
+	virtual void onDisable() {}
+	virtual void onEnable() {}
 };
 
 #include <deque>
