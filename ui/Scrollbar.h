@@ -62,10 +62,48 @@ public:
 
         _barDrawer = cocos2d::DrawNode::create();
         parent->addChild(_barDrawer);
+//
+//        cocos2d::EventListenerTouchOneByOne* touchListener = cocos2d::EventListenerTouchOneByOne::create();
+//        touchListener->onTouchBegan = CC_CALLBACK_2(Scrollbar::touchBegan)
 
         scheduleUpdate();
 
         return true;
+    }
+
+    bool onTouchBegan(Touch* touch, Event* event) {
+        bool result = ScrollView::onTouchBegan(touch, event);
+
+        log("%f %f", touch->getLocation().x, touch->getLocation().y);
+        log("%f %f %f %f", _position.x, _position.y, _contentSize.width, _contentSize.height);
+        if(Rect(_position + Vec2(-16, 16), Size(16, _contentSize.height - 16)).containsPoint(touch->getLocation())) {
+            cocos2d::log("click");
+            _barFocused = true;
+        }
+
+
+
+        return (result || _barFocused);
+    }
+
+    void onTouchMoved(Touch* touch, Event* event) {
+        ScrollView::onTouchMoved(touch, event);
+        if(_barFocused) {
+            float y = -touch->getLocation().y;
+
+            setInnerContainerPosition(Vec2(getInnerContainerPosition().x, y));
+            log("moved");
+        }
+    }
+
+    void onTouchEnded(Touch* touch, Event* event) {
+        ScrollView::onTouchEnded(touch, event);
+        _barFocused = false;
+    }
+
+    void onTouchCancelled(Touch* touch, Event* event) {
+        ScrollView::onTouchCancelled(touch, event);
+        _barFocused = false;
     }
 
     void update(float delta) {
@@ -154,6 +192,8 @@ private:
     cocos2d::ui::Button* _rightButton;
 
     Direction _direction;
+
+    bool _barFocused;
 };
 
 
