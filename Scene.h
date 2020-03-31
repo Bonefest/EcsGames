@@ -18,6 +18,8 @@
 
 #include <memory>
 
+#include "Item.h"
+
 USING_NS_CC;
 
 using std::make_shared;
