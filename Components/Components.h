@@ -41,6 +41,7 @@ struct Cell {
 
     bool passable;
     bool transparent;
+    bool visible;
 
     string name;
 };
