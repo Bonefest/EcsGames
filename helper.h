@@ -21,4 +21,7 @@ bool isDirectionKeyType(KeyType type);
 Vec2 directionKeyTypeToVector(KeyType type);
 std::string directionVectorToString(Vec2 direction);
 
+
+Color3B integerToColor(uint32_t integer);
+
 #endif // HELPER_H_INCLUDED

@@ -223,3 +223,12 @@ std::string directionVectorToString(Vec2 direction) {
 
     return "";
 }
+
+Color3B integerToColor(uint32_t integer) {
+    uint8_t r = integer & 0xFF000000;
+    uint8_t g = integer & 0x00FF0000;
+    uint8_t b = integer & 0x0000FF00;
+
+    return Color3B(r, g, b);
+}
+

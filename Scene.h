@@ -11,6 +11,8 @@
 #include "Systems/HUDSystem.h"
 #include "SystemManager.h"
 
+#include "Dialog/DialogDatabase.h"
+
 #include "EntityFactory.h"
 #include "InputHandler.h"
 
@@ -55,15 +57,6 @@ public:
         initDialogs();
 
         generateMap();
-
-
-        ItemDatabase database;
-        database.load("items_db.json");
-
-
-        entt::entity item = database.createItem(_systemManager.getRegistry(), 1);
-        ItemComponent& component = _systemManager.getRegistry().get<ItemComponent>(item);
-        cocos2d::log("%f %f", component.scalarAttributes.healthPoints, component.percentAttributes.physicalCriticalChance);
 
         _handler = make_shared<InputHandler>(this, _eventDispatcher, _systemManager.getDispatcher());
         _dispatcher = make_shared<ConfigurableKeyDispatcher>(_systemManager.getDispatcher());

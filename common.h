@@ -4,6 +4,8 @@
 #include "cocos2d.h"
 #include <string>
 
+typedef uint32_t ID;
+
 enum KeyType {
     MOVE_TOP_LEFT,
     MOVE_TOP,

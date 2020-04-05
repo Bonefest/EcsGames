@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 
+#include "common.h"
+
 using std::map;
 using std::vector;
 using std::string;
@@ -95,8 +97,6 @@ enum QualityType {
     Excellent,
     Perfect
 };
-
-typedef uint32_t ID;
 
 //Эта информация будет храниться в таблицах и использоваться при генерации настоящего предмета, так же эта информация будет загружаться с файлов.
 struct MetaItem {
