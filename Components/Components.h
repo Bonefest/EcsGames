@@ -107,7 +107,7 @@ struct Lockable {
 struct Speakable {
     explicit Speakable() { }
 
-    EntityRelationStatus status;
+    ID dialogID;
 };
 
 struct GameSettings {

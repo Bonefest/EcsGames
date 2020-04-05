@@ -25,8 +25,7 @@ public:
             doorCellComponent.name = "Wooden door";
 
             Speakable& doorSpeakableComponent = _registry.get<Speakable>(entity);
-            doorSpeakableComponent.status.setStatusDialog(0, StatusInfo{Constants::DialogsTags::DoorDialog, Text{"Hallo, it's a greeting text", Color3B::YELLOW}});
-            doorSpeakableComponent.status.setCurrentStatus(0);
+            doorSpeakableComponent.dialogID = 1;
 
             Drawable& doorDrawableComponent = _registry.get<Drawable>(entity);
             doorDrawableComponent.animations.setAnimation(Constants::AnimationsTags::OpenedAnimationTag, EntityAnimation({"DoorOpen.png"}, 0.0f));

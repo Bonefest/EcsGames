@@ -4,6 +4,9 @@
 #include "../Systems/DialogView.h"
 #include "ControllState.h"
 
+#include "../Dialog/DialogDatabase.h"
+#include "../Dialog/Dialog.h"
+
 class TalkingControllState: public ControllState {
 public:
     TalkingControllState(entt::entity partner);

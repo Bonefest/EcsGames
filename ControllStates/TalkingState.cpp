@@ -1,6 +1,7 @@
 #include "TalkingState.h"
 #include "NormalState.h"
-#include "Dialog.h"
+
+#include "../Dialog/Dialog.h"
 
 TalkingControllState::TalkingControllState(entt::entity partner): _partner(partner) { }
 TalkingControllState::~TalkingControllState() { }
@@ -8,13 +9,10 @@ TalkingControllState::~TalkingControllState() { }
 void TalkingControllState::onEnter(IStateOwner* owner,
                                    entt::registry& registry,
                                    entt::dispatcher& dispatcher) {
-    DialogManager& dialogManager = registry.ctx<DialogManager>();
 
     Speakable& speakableComponent = registry.get<Speakable>(_partner);
-    StatusInfo currentStatus = speakableComponent.status.getCurrentStatusInfo();
-    dialogManager.setCurrentDialog(currentStatus.dialogID);
-    dialogManager.setCurrentText(currentStatus.greetingText);
-    dialogManager.setDialogPartner(_partner);
+    DialogInfo& dialogInfo = registry.ctx<DialogInfo>();
+    dialogInfo.dialog = registry.ctx<DialogDatabase>().getDialog(speakableComponent.dialogID);
 
     _dialogView = make_shared<DialogView>();
     _dialogView->onDialogChanged(registry, dispatcher);
@@ -28,18 +26,18 @@ shared_ptr<Command> TalkingControllState::handleInputEvent(IStateOwner* owner,
                                                            entt::registry& registry,
                                                            entt::dispatcher& dispatcher,
                                                            const UnprocessedKeyActionEvent& event) {
-    DialogManager& dialogManager = registry.ctx<DialogManager>();
+    DialogInfo& dialogInfo = registry.ctx<DialogInfo>();
 
     if(event.keyType == MOVE_TOP) {
-        dialogManager.getCurrentDialog().previousReplica();
+        dialogInfo.currentIndex++;
         _dialogView->onDialogChanged(registry, dispatcher);
     } else if(event.keyType == MOVE_BOTTOM) {
-        dialogManager.getCurrentDialog().nextReplica();
+        dialogInfo.currentIndex--;
         _dialogView->onDialogChanged(registry, dispatcher);
     } else if(event.keyType == CANCEL) {
         owner->setState(make_shared<NormalControllState>(), registry, dispatcher);
     } else if(event.key == cocos2d::EventKeyboard::KeyCode::KEY_ENTER) {
-        dialogManager.getCurrentDialog().getCurrentReplica()->useReplica(registry, dispatcher, _partner);
+        dialogInfo.dialog.replicas[dialogInfo.currentIndex]->useReplica(registry, dispatcher, _partner);
         _dialogView->onDialogChanged(registry, dispatcher);
     }
 

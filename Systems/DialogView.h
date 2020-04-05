@@ -9,7 +9,7 @@
 #include "../helper.h"
 #include "../ui/Scrollbar.h"
 
-#include "../Dialog.h"
+#include "../Dialog/Dialog.h"
 
 class DialogView: public ISystem {
 public:
@@ -58,26 +58,24 @@ public:
     void onDialogChanged(entt::registry& registry, entt::dispatcher& dispatcher) {
         //??? How about event listener
 
-        DialogManager& dialogManager = registry.ctx<DialogManager>();
-        initReplicasText(dialogManager);
-        _currentDialogID = dialogManager.getCurrentDialogID();
+        DialogInfo& info = registry.ctx<DialogInfo>();
+        initReplicasText(info);
 
-        std::size_t activeIndex = dialogManager.getCurrentDialog().getCurrentReplicaIndex();
-        for(std::size_t i = 0; i < _currentReplicasText.size(); ++i) {
-            if(i == activeIndex) _currentReplicasText[i]->setOpacity(255);
+        for(std::size_t i = 0; i < info.dialog.replicas.size(); ++i) {
+            if(i == info.currentIndex) _currentReplicasText[i]->setOpacity(255);
             else _currentReplicasText[i]->setOpacity(127);
         }
     }
 
 private:
-    void initReplicasText(DialogManager& manager) {
+    void initReplicasText(DialogInfo& info) {
         removeAllText();
 
         Vec2 textPosition = Vec2(20, _replicaScrollbar->getContentSize().height - 20);
 
         float scrollWidth = _replicaScrollbar->getContentSize().width;
 
-        for(auto replica : manager.getCurrentDialog().getAvailableReplicas()) {
+        for(auto replica : info.dialog.replicas) {
             Text text = replica->getReplicaText();
 
             cocos2d::ui::Text* uitext = cocos2d::ui::Text::create(cutMessage(text.text, 14.0f, scrollWidth - 20.0f),
@@ -98,7 +96,7 @@ private:
 
         Size currentResponseSize = _responseScrollbar->getContentSize();
 
-        Text text = manager.getCurrentText();
+        Text text = info.answer;
         _responseText->setString(cutMessage(text.text, _responseText->getFontSize(), _responseScrollbar->getContentSize().width - 40));
         _responseText->setColor(text.textColor);
 

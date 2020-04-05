@@ -19,9 +19,13 @@ struct Dialog {
 };
 
 struct DialogInfo {
+    explicit DialogInfo() : currentIndex(0) { }
+
     Dialog dialog;
     entt::entity dialogMember;
     Text answer;
+
+    std::size_t currentIndex;
 };
 
 #endif // DIALOG_H_INCLUDED
