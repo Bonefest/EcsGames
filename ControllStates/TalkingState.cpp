@@ -13,6 +13,7 @@ void TalkingControllState::onEnter(IStateOwner* owner,
     Speakable& speakableComponent = registry.get<Speakable>(_partner);
     DialogInfo& dialogInfo = registry.ctx<DialogInfo>();
     dialogInfo.dialog = registry.ctx<DialogDatabase>().getDialog(speakableComponent.dialogID);
+    dialogInfo.answer = dialogInfo.dialog.startText;
 
     _dialogView = make_shared<DialogView>();
     _dialogView->onDialogChanged(registry, dispatcher);
@@ -29,10 +30,10 @@ shared_ptr<Command> TalkingControllState::handleInputEvent(IStateOwner* owner,
     DialogInfo& dialogInfo = registry.ctx<DialogInfo>();
 
     if(event.keyType == MOVE_TOP) {
-        dialogInfo.currentIndex++;
+        dialogInfo.currentIndex = (uint64_t(dialogInfo.currentIndex) + 1) % dialogInfo.dialog.replicas.size();
         _dialogView->onDialogChanged(registry, dispatcher);
     } else if(event.keyType == MOVE_BOTTOM) {
-        dialogInfo.currentIndex--;
+        dialogInfo.currentIndex = (uint64_t(dialogInfo.currentIndex) - 1) % dialogInfo.dialog.replicas.size();
         _dialogView->onDialogChanged(registry, dispatcher);
     } else if(event.keyType == CANCEL) {
         owner->setState(make_shared<NormalControllState>(), registry, dispatcher);

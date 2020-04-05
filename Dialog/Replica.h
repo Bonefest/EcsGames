@@ -20,14 +20,23 @@ protected:
     Text _replicaText;
 };
 
+class CloseDialogReplica: public Replica {
+public:
+    CloseDialogReplica(Text replicaText);
+
+    void useReplica(entt::registry& registry, entt::dispatcher& dispatcher, entt::entity replicaOwner);
+
+
+};
+
 class SwitchDialogReplica: public Replica {
 public:
     SwitchDialogReplica(uint32_t dialogID, Text switchText, Text replicaText);
     void useReplica(entt::registry& registry, entt::dispatcher& dispatcher, entt::entity replicaOwner);
+
 private:
     uint32_t _dialogID;
     Text _switchText;
-    Text _replicaText;
 };
 
 
