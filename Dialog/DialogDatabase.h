@@ -13,6 +13,8 @@ using std::map;
 #include "../Dependencies/json.hpp"
 #include "../common.h"
 
+#include "cocos2d.h"
+
 #include "Dialog.h"
 
 class DialogDatabase {
@@ -20,8 +22,9 @@ public:
     void loadDialogs(const string& fileName);
     Dialog getDialog(ID dialogID);
 private:
-    shared_ptr<Replica> replicasFactory(nlohmann::json& info);
-    Text parseText(nlohmann::json& stateText);
+    shared_ptr<Replica> replicaBuilder(nlohmann::json& dialogInfo);
+    Text parseText(nlohmann::json& text);
+    cocos2d::Color3B parseColor(vector<int> color);
 
     map<ID, Dialog> _dialogs;
 };

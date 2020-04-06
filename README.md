@@ -21,6 +21,7 @@ Follows canon roguelike rules
 [__Status__: *active*] Flexible and extensible menu system\
 [__Status__: *active*] Data-driven items system
 
+[__Status__: *unactive*] Migrating to SDL\
 [__Status__: *unactive*] Skills and abilities\
 [__Status__: *unactive*] Fighting system\
 [__Status__: *unactive*] Procedural dungeon generation\
@@ -36,3 +37,27 @@ Follows canon roguelike rules
 [__Status__: *unactive*] Multitext class - creating html-like text patterns\
 [__Status__: *unactive*] Text scripting parser\
 [__Status__: *unactive*] System pre-defined and user extensible game configuration
+
+# Systems overview
+
+### Dialog System
+
+Consists of 4 main parts
+
+*DialogDatabase* - Dialogs container. Main purposes are: loading dialogs from JSON and sharing them to other systems;\
+*Dialog* - Container of replicas, greeting text and (optional) next default dialog id.\
+*DialogInfo* - Structure for communicating between logic and view. Contains information about active dialog, dialog member, current dialog text.\
+*Replica* - Represents action (Command pattern).
+
+*DialogDatabase* based on available data builds a dialog with the array of replicas. Each replica consists of one or more actions (thanks to *MultipleReplica*) but should be changed in the future because of inefficient using of memory. (e.g *ReplicaAction* represents a command but Replica represents a container of actions and it's title).
+
+Problems:
+
+-Now it's impossible to create a dynamic dialog. We cannot build a dialog based on some state of game and are limiting ourself only to static built-in dialog.\
+-Dynamic dialogs require some sort of scripting language and that's overkill.
+
+Usage:
+
+*TalkingState* on activating obtain information from dialog member about dialog id, asks *DialogDatabase* to create the dialog and initialize *DialogInfo* structure. Creates dialog view.\
+*DialogView* obtain current active dialog and initialize a list of possible replicas.\
+Whenever dialog changes or player selects other replica, *TalkingState* informs the *DialogView* about that.

@@ -12,8 +12,12 @@ void TalkingControllState::onEnter(IStateOwner* owner,
 
     Speakable& speakableComponent = registry.get<Speakable>(_partner);
     DialogInfo& dialogInfo = registry.ctx<DialogInfo>();
+    dialogInfo.dialogMember = _partner;
     dialogInfo.dialog = registry.ctx<DialogDatabase>().getDialog(speakableComponent.dialogID);
     dialogInfo.answer = dialogInfo.dialog.startText;
+    if(dialogInfo.dialog.nextDialog != 0) {
+        speakableComponent.dialogID = dialogInfo.dialog.nextDialog;
+    }
 
     _dialogView = make_shared<DialogView>();
     _dialogView->onDialogChanged(registry, dispatcher);
@@ -38,7 +42,7 @@ shared_ptr<Command> TalkingControllState::handleInputEvent(IStateOwner* owner,
     } else if(event.keyType == CANCEL) {
         owner->setState(make_shared<NormalControllState>(), registry, dispatcher);
     } else if(event.key == cocos2d::EventKeyboard::KeyCode::KEY_ENTER) {
-        dialogInfo.dialog.replicas[dialogInfo.currentIndex]->useReplica(registry, dispatcher, _partner);
+        dialogInfo.dialog.replicas[dialogInfo.currentIndex]->useReplica(registry, dispatcher);
         _dialogView->onDialogChanged(registry, dispatcher);
     }
 
