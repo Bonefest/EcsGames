@@ -17,7 +17,6 @@ Follows canon roguelike rules
 
 ### Major
 
-[__Status__: *active*] Data-driven dialog system\
 [__Status__: *active*] Flexible and extensible menu system\
 [__Status__: *active*] Data-driven items system
 
@@ -29,6 +28,8 @@ Follows canon roguelike rules
 [__Status__: *unactive*] Classes and races\
 [__Status__: *unactive*] User-friendly crafting system
 
+
+[__Status__: *done*] Data-driven dialog system\
 [__Status__: *done*] Vision and lighting system\
 [__Status__: *done*] Hints system
 
@@ -42,14 +43,13 @@ Follows canon roguelike rules
 
 ### Dialog System
 
-Consists of 4 main parts
+Consists of 5 main parts
 
 *DialogDatabase* - Dialogs container. Main purposes are: loading dialogs from JSON and sharing them to other systems;\
 *Dialog* - Container of replicas, greeting text and (optional) next default dialog id.\
 *DialogInfo* - Structure for communicating between logic and view. Contains information about active dialog, dialog member, current dialog text.\
-*Replica* - Represents action (Command pattern).
-
-*DialogDatabase* based on available data builds a dialog with the array of replicas. Each replica consists of one or more actions (thanks to *MultipleReplica*) but should be changed in the future because of inefficient using of memory. (e.g *ReplicaAction* represents a command but Replica represents a container of actions and it's title).
+*ReplicaAction* - Represent an action of replica on activating.\
+*Replica* - Represents replica itself. Consists of list of ReplicaAction.
 
 Problems:
 
