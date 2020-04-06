@@ -42,7 +42,7 @@ shared_ptr<Command> TalkingControllState::handleInputEvent(IStateOwner* owner,
     } else if(event.keyType == CANCEL) {
         owner->setState(make_shared<NormalControllState>(), registry, dispatcher);
     } else if(event.key == cocos2d::EventKeyboard::KeyCode::KEY_ENTER) {
-        dialogInfo.dialog.replicas[dialogInfo.currentIndex]->useReplica(registry, dispatcher);
+        dialogInfo.dialog.replicas[dialogInfo.currentIndex]->activateReplica(registry, dispatcher);
         _dialogView->onDialogChanged(registry, dispatcher);
     }
 

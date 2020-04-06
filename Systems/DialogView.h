@@ -76,7 +76,7 @@ private:
         float scrollWidth = _replicaScrollbar->getContentSize().width;
 
         for(auto replica : info.dialog.replicas) {
-            Text text = replica->getReplicaText();
+            Text text = replica->getReplicaTitle();
 
             cocos2d::ui::Text* uitext = cocos2d::ui::Text::create(cutMessage(text.text, 14.0f, scrollWidth - 20.0f),
                                                                   Constants::StandardFontName,

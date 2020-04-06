@@ -21,11 +21,10 @@ struct Dialog {
 struct DialogInfo {
     explicit DialogInfo() : currentIndex(0) { }
 
-    Dialog dialog;
-    entt::entity dialogMember;
     Text answer;
-
+    Dialog dialog;
     std::size_t currentIndex;
+    entt::entity dialogMember;
 };
 
 #endif // DIALOG_H_INCLUDED

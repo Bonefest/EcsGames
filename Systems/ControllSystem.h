@@ -73,6 +73,7 @@ public:
         }
 
         _receivedKeyEvents.clear();
+        _receivedCommands.clear();
     }
 
     void onUnprocessedKeyActionEvent(const UnprocessedKeyActionEvent& event) {

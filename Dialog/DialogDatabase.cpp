@@ -8,6 +8,9 @@ using std::make_shared;
 
 #include "../helper.h"
 
+#include "Replica.h"
+#include "ReplicaAction.h"
+
 void DialogDatabase::loadDialogs(const string& dialogsFile) {
     nlohmann::json parsedDialogs;
     std::ifstream file(dialogsFile);
@@ -30,32 +33,20 @@ Dialog DialogDatabase::getDialog(ID dialogID) {
 }
 
 shared_ptr<Replica> DialogDatabase::replicaBuilder(nlohmann::json& info) {
-    vector<shared_ptr<Replica>> replicas;
+    shared_ptr<Replica> replica = make_shared<Replica>(parseText(info["text_data"]));
     if(info.contains("switch_dialog_id")) {
-        replicas.push_back(make_shared<SwitchDialogReplica>(info["switch_dialog_id"],
-                                                            parseText(info["text_answer"]),
-                                                            parseText(info["text_data"])));
+        replica->addReplicaAction(make_shared<SwitchDialog>(info["switch_dialog_id"], parseText(info["text_answer"])));
     }
 
     if(info.contains("finish")) {
-        replicas.push_back(make_shared<CloseDialogReplica>(parseText(info["text_data"])));
+        replica->addReplicaAction(make_shared<CloseDialog>());
     }
 
     if(info.contains("next_default_dialog")) {
-        replicas.push_back(make_shared<SetNextDefaultDialogReplica>(info["next_default_dialog"],
-                                                                    parseText(info["text_data"])));
+        replica->addReplicaAction(make_shared<SetNextDefaultDialog>(info["next_default_dialog"]));
     }
 
-    if(replicas.size() > 1) {
-        auto result = make_shared<MultipleReplica>();
-        for(auto replica: replicas)
-            result->addReplica(replica);
-
-        result->setReplicaText(parseText(info["text_data"]));
-        return result;
-    } else if(replicas.size() == 1) return replicas.front();
-
-    return nullptr;
+    return replica;
 }
 
 Text DialogDatabase::parseText(nlohmann::json& text) {

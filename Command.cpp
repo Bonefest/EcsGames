@@ -136,4 +136,10 @@ void CloseCommand::execute(IStateOwner* owner, entt::registry& registry, entt::d
     }
 }
 
+SetStateCommand::SetStateCommand(shared_ptr<ControllState> state): _state(state) { }
+
+void SetStateCommand::execute(IStateOwner* owner, entt::registry& registry, entt::dispatcher& dispatcher) {
+    owner->setState(_state, registry, dispatcher);
+}
+
 void NullCommand::execute(IStateOwner* owner, entt::registry& registry, entt::dispatcher& dispatcher) { }
