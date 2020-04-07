@@ -45,9 +45,6 @@ namespace Constants {
         ClosedAnimationTag,
     };
 
-    enum DialogsTags {
-        DoorDialog,
-    };
 
     const std::string StandardFontName = "fonts/PressStart2P.ttf";
 }

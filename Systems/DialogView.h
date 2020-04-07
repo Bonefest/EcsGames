@@ -23,6 +23,8 @@ public:
         _replicaScrollbar->setBackGroundColorOpacity(127);
         _replicaScrollbar->setBackGroundColorType(Scrollbar::BackGroundColorType::SOLID);
         _replicaScrollbar->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
+        _replicaScrollbar->setAutoAlignEnabled(true);
+        _replicaScrollbar->setAlignOffset(20.0f);
         _replicaScrollbar->setScrollBarEnabled(false);
         _replicaScrollbar->setContentSize(Size(_visibleSize.width * 0.3f, _visibleSize.height * 0.8f));
 
@@ -63,15 +65,12 @@ public:
 
         for(std::size_t i = 0; i < info.dialog.replicas.size(); ++i) {
             if(i == info.currentIndex) _currentReplicasText[i]->setOpacity(255);
-            else _currentReplicasText[i]->setOpacity(127);
         }
     }
 
 private:
     void initReplicasText(DialogInfo& info) {
         removeAllText();
-
-        Vec2 textPosition = Vec2(20, _replicaScrollbar->getContentSize().height - 20);
 
         float scrollWidth = _replicaScrollbar->getContentSize().width;
 
@@ -81,26 +80,17 @@ private:
             cocos2d::ui::Text* uitext = cocos2d::ui::Text::create(cutMessage(text.text, 14.0f, scrollWidth - 20.0f),
                                                                   Constants::StandardFontName,
                                                                   14.0f);
-
-            uitext->setAnchorPoint(Vec2::ANCHOR_TOP_LEFT);
-
+            uitext->setPositionX(20.0f);
             uitext->setOpacity(GLubyte(127));
-            uitext->setPosition(textPosition);
-
-            textPosition.y += -uitext->getContentSize().height - 20;
 
             _replicaScrollbar->addChild(uitext);
-
             _currentReplicasText.push_back(uitext);
         }
-
-        Size currentResponseSize = _responseScrollbar->getContentSize();
 
         Text text = info.answer;
         _responseText->setString(cutMessage(text.text, _responseText->getFontSize(), _responseScrollbar->getContentSize().width - 40));
         _responseText->setColor(text.textColor);
 
-        _responseScrollbar->setInnerContainerSize(Size(currentResponseSize.width, std::max(currentResponseSize.height, _responseText->getContentSize().height + 40)));
         _responseText->setPosition(Vec2(20, _responseScrollbar->getInnerContainerSize().height - 20));
     }
 

@@ -2,6 +2,7 @@
 #define COMPONENTS_H_INCLUDED
 
 #include "cocos2d.h"
+#include "../Item.h"
 #include "../common.h"
 #include "../Animation.h"
 #include "../StateSprite.h"
@@ -55,19 +56,21 @@ struct Light {
     uint32_t radius;
 };
 
+
+
 struct Creature {
 
-    uint8_t level;
-    uint32_t experience;
+    Attributes baseAttributes;
+    Attributes currentAttributes;
 
-    float magic;
+    map<ItemType, entt::entity> wornItems;
+    vector<entt::entity> inventoryItems;
 
-    float movementSpeed;
-    float attackSpeed;
+    float maxInventoryVolume;
+    float maxInventoryWeight;
 
-    uint16_t strength;
-    uint16_t agillity;
-    uint16_t intellect;
+    float currentInventoryVolume;
+    float currentInventoryWeight;
 
     uint32_t penaltyTime;
     uint32_t viewDistance;

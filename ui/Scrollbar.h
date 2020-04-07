@@ -195,7 +195,41 @@ public:
         _barDrawer->setVisible(enabled);
     }
 
+    void addChild(Node* child) {
+        cocos2d::ui::ScrollView::addChild(child);
+        alignChilds();
+    }
+
+    void setAlignOffset(float offset) {
+        _alignOffset = offset;
+    }
+
+    void setAutoAlignEnabled(bool enabled) {
+        _autoAlignEnabled = enabled;
+    }
+
+    bool isAutoAlignEnabled() const {
+        return _autoAlignEnabled;
+    }
+
 private:
+    void alignChilds() {
+        if(_autoAlignEnabled) {
+            float itemPositionY = getContentSize().height - _alignOffset;
+
+            auto children = getChildren();
+            for(auto child : children) {
+                child->setAnchorPoint(Vec2::ANCHOR_TOP_LEFT);
+                child->setPositionY(itemPositionY);
+                itemPositionY = itemPositionY - child->getContentSize().height - _alignOffset;
+            }
+            Size innerSize = getInnerContainerSize();
+            setInnerContainerSize(Size(innerSize.width,
+                                       std::max(innerSize.height, abs(itemPositionY + 20.0f))));
+
+        }
+    }
+
     cocos2d::DrawNode* _barDrawer;
 
     cocos2d::ui::Button* _upButton;
@@ -207,6 +241,9 @@ private:
     Direction _direction;
 
     bool _barFocused;
+    bool _autoAlignEnabled;
+
+    float _alignOffset;
 };
 
 
