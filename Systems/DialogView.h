@@ -34,6 +34,8 @@ public:
         _responseScrollbar->setBackGroundColorOpacity(127);
         _responseScrollbar->setBackGroundColorType(Scrollbar::BackGroundColorType::SOLID);
         _responseScrollbar->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
+        _responseScrollbar->setAutoAlignEnabled(true);
+        _responseScrollbar->setAlignOffset(20.0f);
         _responseScrollbar->setScrollBarEnabled(false);
         _responseScrollbar->setContentSize(Size(_visibleSize.width * 0.5f, _visibleSize.height * 0.4f));
 
@@ -90,8 +92,9 @@ private:
         Text text = info.answer;
         _responseText->setString(cutMessage(text.text, _responseText->getFontSize(), _responseScrollbar->getContentSize().width - 40));
         _responseText->setColor(text.textColor);
-
         _responseText->setPosition(Vec2(20, _responseScrollbar->getInnerContainerSize().height - 20));
+
+        _responseScrollbar->alignChilds();
     }
 
     void removeAllText() {

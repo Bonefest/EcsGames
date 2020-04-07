@@ -212,23 +212,31 @@ public:
         return _autoAlignEnabled;
     }
 
-private:
     void alignChilds() {
         if(_autoAlignEnabled) {
-            float itemPositionY = getContentSize().height - _alignOffset;
+
+            float height = _alignOffset;
 
             auto children = getChildren();
             for(auto child : children) {
+                height += child->getContentSize().height + _alignOffset;
+            }
+
+            Size innerSize = getInnerContainerSize();
+            setInnerContainerSize(Size(innerSize.width,
+                                       std::max(innerSize.height, height + 20.0f)));
+            float itemPositionY = getInnerContainerSize().height - _alignOffset;
+
+            for(auto child: children) {
                 child->setAnchorPoint(Vec2::ANCHOR_TOP_LEFT);
                 child->setPositionY(itemPositionY);
                 itemPositionY = itemPositionY - child->getContentSize().height - _alignOffset;
             }
-            Size innerSize = getInnerContainerSize();
-            setInnerContainerSize(Size(innerSize.width,
-                                       std::max(innerSize.height, abs(itemPositionY + 20.0f))));
+
 
         }
     }
+private:
 
     cocos2d::DrawNode* _barDrawer;
 
