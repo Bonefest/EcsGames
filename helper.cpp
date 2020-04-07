@@ -143,7 +143,7 @@ std::string cutMessage2(const std::string& message, float fontSize, float viewWi
 std::string cutMessage(const std::string& message, float fontSize, float viewWidth) {
     std::string result = "";
 
-    int maxLineChars = viewWidth / (fontSize + 1.0f);
+    int maxLineChars = viewWidth / (fontSize + 0.0f);
 
     std::stringstream sstream(message);
     std::string line = "";

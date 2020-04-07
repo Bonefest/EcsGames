@@ -53,7 +53,7 @@ public:
 
         initContext();
         initSystems();
-        initDialogs();
+        initDatabases();
 
         generateMap();
 
@@ -73,6 +73,7 @@ public:
         _dispatcher->setKeyType(EventKeyboard::KeyCode::KEY_E, USE);
         _dispatcher->setKeyType(EventKeyboard::KeyCode::KEY_A, ATTACK);
         _dispatcher->setKeyType(EventKeyboard::KeyCode::KEY_T, TALK);
+        _dispatcher->setKeyType(EventKeyboard::KeyCode::KEY_I, INVENTORY);
 
 
 
@@ -122,6 +123,7 @@ private:
         registry.set<WorldData>();
         registry.set<DialogInfo>();
         registry.set<DialogDatabase>();
+        registry.set<ItemDatabase>();
     }
 
     void initSystems() {
@@ -129,10 +131,12 @@ private:
                                                                                  _systemManager.getDispatcher()));
     }
 
-    void initDialogs() {
+    void initDatabases() {
+        ItemDatabase& itemDB = _systemManager.getRegistry().ctx<ItemDatabase>();
+        itemDB.load("items_db.json");
 
-        DialogDatabase& database = _systemManager.getRegistry().ctx<DialogDatabase>();
-        database.loadDialogs("dialogs_db.json");
+        DialogDatabase& dialogDB = _systemManager.getRegistry().ctx<DialogDatabase>();
+        dialogDB.loadDialogs("dialogs_db.json");
     }
 
     void generateMap() {

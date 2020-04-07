@@ -27,6 +27,10 @@ public:
 
         _leftButton = _rightButton = _upButton = _downButton = nullptr;
 
+        _autoAlignEnabled = false;
+        _alignOffset = 0.0f;
+        _leftMargin = _rightMargin = _topMargin = _bottomMargin = 0.0f;
+
         if(direction == Direction::HORIZONTAL || direction == Direction::BOTH) {
             _leftButton = cocos2d::ui::Button::create("UpButton.png", "", "", TextureResType::PLIST);
             _leftButton->setAnchorPoint(Vec2::ANCHOR_BOTTOM_RIGHT);
@@ -204,6 +208,13 @@ public:
         _alignOffset = offset;
     }
 
+    void setMargin(float left, float top, float right, float bottom) {
+        _leftMargin = left;
+        _rightMargin = right;
+        _topMargin = top;
+        _bottomMargin;
+    }
+
     void setAutoAlignEnabled(bool enabled) {
         _autoAlignEnabled = enabled;
     }
@@ -215,26 +226,34 @@ public:
     void alignChilds() {
         if(_autoAlignEnabled) {
 
-            float height = _alignOffset;
+            float height = _topMargin;
 
             auto children = getChildren();
             for(auto child : children) {
                 height += child->getContentSize().height + _alignOffset;
             }
 
+            height -= _alignOffset;
+            height += _bottomMargin;
+
             Size innerSize = getInnerContainerSize();
             setInnerContainerSize(Size(innerSize.width,
-                                       std::max(innerSize.height, height + 20.0f)));
+                                       std::max(innerSize.height, height + _alignOffset)));
             float itemPositionY = getInnerContainerSize().height - _alignOffset;
 
             for(auto child: children) {
                 child->setAnchorPoint(Vec2::ANCHOR_TOP_LEFT);
                 child->setPositionY(itemPositionY);
+                child->setPositionX(_leftMargin);
                 itemPositionY = itemPositionY - child->getContentSize().height - _alignOffset;
             }
 
 
         }
+    }
+
+    Size getCropSize() {
+        return Size(Vec2(getContentSize()) - Vec2(_leftMargin + _rightMargin, _topMargin + _bottomMargin));
     }
 private:
 
@@ -252,6 +271,11 @@ private:
     bool _autoAlignEnabled;
 
     float _alignOffset;
+
+    float _leftMargin;
+    float _topMargin;
+    float _rightMargin;
+    float _bottomMargin;
 };
 
 

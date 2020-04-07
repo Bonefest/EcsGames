@@ -22,6 +22,7 @@ enum KeyType {
     CLOSE,
     ATTACK,
     TALK,
+    INVENTORY,
 
     UNRESOLVED
 };
@@ -37,6 +38,7 @@ namespace Constants {
         HintViewTag,
         InventoryViewTag,
         DialogViewTag,
+        ItemViewTag,
     };
 
     enum AnimationsTags {

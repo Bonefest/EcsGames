@@ -11,7 +11,9 @@
 #include "AttackState.h"
 #include "OpeningState.h"
 #include "ClosingState.h"
+#include "InventoryState.h"
 #include "TalkingPreparingState.h"
+
 
 NormalControllState::~NormalControllState() { }
 
@@ -72,6 +74,7 @@ shared_ptr<Command> NormalControllState::handleInputEvent(IStateOwner* owner,
         case OPEN:      owner->setState(make_shared<OpeningControllState>(), registry, dispatcher); break;
         case CLOSE:     owner->setState(make_shared<ClosingControllState>(), registry, dispatcher); break;
         case TALK:      owner->setState(make_shared<TalkingPreparingState>(), registry, dispatcher); break;
+        case INVENTORY: owner->setState(make_shared<InventoryControllState>(), registry, dispatcher); break;
         }
 
         return make_shared<NullCommand>();

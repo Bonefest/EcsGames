@@ -25,6 +25,7 @@ public:
         _replicaScrollbar->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
         _replicaScrollbar->setAutoAlignEnabled(true);
         _replicaScrollbar->setAlignOffset(20.0f);
+        _replicaScrollbar->setMargin(20.0f, 20.0f, 0.0f, 0.0f);
         _replicaScrollbar->setScrollBarEnabled(false);
         _replicaScrollbar->setContentSize(Size(_visibleSize.width * 0.3f, _visibleSize.height * 0.8f));
 
@@ -36,12 +37,12 @@ public:
         _responseScrollbar->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
         _responseScrollbar->setAutoAlignEnabled(true);
         _responseScrollbar->setAlignOffset(20.0f);
+        _responseScrollbar->setMargin(20.0f, 20.0f, 0.0f, 20.0f);
         _responseScrollbar->setScrollBarEnabled(false);
         _responseScrollbar->setContentSize(Size(_visibleSize.width * 0.5f, _visibleSize.height * 0.4f));
 
         _responseText = cocos2d::ui::Text::create("", Constants::StandardFontName, 14.0f);
         _responseText->setAnchorPoint(Vec2::ANCHOR_TOP_LEFT);
-        _responseText->setPosition(Vec2(20, _responseScrollbar->getContentSize().height - 20));
         _responseScrollbar->addChild(_responseText);
 
         runningScene->addChild(_replicaScrollbar);
@@ -74,15 +75,14 @@ private:
     void initReplicasText(DialogInfo& info) {
         removeAllText();
 
-        float scrollWidth = _replicaScrollbar->getContentSize().width;
+        float scrollWidth = _replicaScrollbar->getCropSize().width;
 
         for(auto replica : info.dialog.replicas) {
             Text text = replica->getReplicaTitle();
 
-            cocos2d::ui::Text* uitext = cocos2d::ui::Text::create(cutMessage(text.text, 14.0f, scrollWidth - 20.0f),
+            cocos2d::ui::Text* uitext = cocos2d::ui::Text::create(cutMessage(text.text, 14.0f, scrollWidth),
                                                                   Constants::StandardFontName,
                                                                   14.0f);
-            uitext->setPositionX(20.0f);
             uitext->setOpacity(GLubyte(127));
 
             _replicaScrollbar->addChild(uitext);
@@ -92,7 +92,6 @@ private:
         Text text = info.answer;
         _responseText->setString(cutMessage(text.text, _responseText->getFontSize(), _responseScrollbar->getContentSize().width - 40));
         _responseText->setColor(text.textColor);
-        _responseText->setPosition(Vec2(20, _responseScrollbar->getInnerContainerSize().height - 20));
 
         _responseScrollbar->alignChilds();
     }

@@ -152,7 +152,7 @@ struct ItemComponent {
     ItemType type;
     Attributes scalarAttributes;
     Attributes percentAttributes;
-    Attributes attributesLimitationsRange;
+    Attributes attributesLimitations;
     QualityType qualityType;
     float durability;
     float weight;
@@ -160,6 +160,7 @@ struct ItemComponent {
 
     uint32_t level;
 
+    string name;
     string description;
 };
 

@@ -46,13 +46,14 @@ entt::entity ItemDatabase::createItem(entt::registry& registry, ID itemID) {
 
     itemComponent.scalarAttributes = generateAttributes(metaItem.scalarAttributesRange);
     itemComponent.percentAttributes = generateAttributes(metaItem.percentAttributesRange);
-    itemComponent.attributesLimitationsRange = generateAttributes(metaItem.attributesLimitationsRange);
+    itemComponent.attributesLimitations = generateAttributes(metaItem.attributesLimitationsRange);
     itemComponent.qualityType = QualityType(cocos2d::random(int(metaItem.qualityRange.first),
                                                             int(metaItem.qualityRange.second)));
     itemComponent.durability = random(metaItem.durabilityRange);
     itemComponent.weight = random(metaItem.weightRange);
     itemComponent.volume = random(metaItem.volumeRange);
     itemComponent.level = uint32_t(round(random(metaItem.levelRange)));
+    itemComponent.name = metaItem.name;
     itemComponent.description = metaItem.description;   //TODO: description parsing (e.g `{item_name} has been created by immortal titan Ian.`)
 
     return item;
