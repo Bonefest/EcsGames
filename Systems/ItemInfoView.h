@@ -78,6 +78,7 @@ public:
 
             for(Text text : information) {
                 cocos2d::ui::Text* uitext = cocos2d::ui::Text::create(cutMessage(text.text, 12.0f, _scrollbar->getContentSize().width), Constants::StandardFontName, 12.0f);
+                //uitext->getLetter(1)->setColor(Color3B::YELLOW);
                 uitext->setTextColor(Color4B(text.textColor));
                 _scrollbar->addChild(uitext);
             }
