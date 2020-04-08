@@ -12,67 +12,105 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "cocos2d.h"
 #include "ui/UIText.h"
 
 using std::map;
+using std::pair;
 using std::string;
+using std::vector;
+using std::make_pair;
 USING_NS_CC;
 
 class TextGenerator {
 
     cocos2d::ui::Text* generateText(entt::registry& registry, const string& unformattedText, float fontSize, float maxWidth) {
         string substitutedText = substitute(registry, unformattedText);
-        log("%s", substitutedText->c_str());
+        log("%s", substitutedText.c_str());
 
-        string wrappedText = cutMessage(clearText(substitutedText), fontSize, maxWidth);
 
-        Color3B currentColor = Color3B::WHITE;
-        cocos2d::ui::Text* text = cocos2d::ui::Text::create(wrappedText, Constants::StandardFontName, fontSize);
+        vector<pair<string, Color3B>> parsedColorsText = parseColorsText(substitutedText);
 
-        std::size_t
-        for(std::size_t i = 0; i < wrappedText.size(); ++i) {
-
+        string wrappedText = "";
+        for(auto text : parsedColorsText) {
+            wrappedText += text.first;
         }
+
+        wrappedText = cutMessage(wrappedText, fontSize, maxWidth);
+        cocos2d::ui::Text* uitext = cocos2d::ui::Text::create(wrappedText, Constants::StandardFontName, fontSize);
+
+        Color3B currentColor;
+        int currentPairIndex = -1;
+        std::size_t pairStringVisibleChars = 0, wrappedStringVisibleChars = 0;
+        for(std::size_t i = 0;i < wrappedText.size(); ++i) {
+            if(wrappedStringVisibleChars >= pairStringVisibleChars) {
+                currentPairIndex++;
+                pairStringVisibleChars = wrappedStringVisibleChars = 0;
+                for(auto sym : parsedColorsText[currentPairIndex].first) {
+                    if(isgraph(sym)) pairStringVisibleChars++;
+                }
+                currentColor = parsedColorsText[currentPairIndex].second;
+            }
+
+            if(isgraph(wrappedText[i])) {
+                wrappedStringVisibleChars++;
+                Sprite* sprite = uitext->getLetter(i);
+                if(sprite != nullptr) {
+                    sprite->setColor(currentColor);
+                }
+            }
+        }
+
+        return uitext;
     }
 
 private:
-    vector<pair<string, Color3B>> parseColors(string text) {
+    vector<pair<string, Color3B>> parseColorsText(string text) {
         vector<pair<string, Color3B>> result;
 
-        string clearedText = text;
         Color3B currentColor = Color3B::WHITE;
         std::size_t previousStart = 0, start, end;
 
-        while( (start = clearedText.find("$$$", previousStart)) != string::npos &&
-               (end = clearedText.find("$$$", start + 3)) != string::npos) {
-            result.push_back(make_pair<string, Color3B>(text.substr(previousStart, start - previousStart), currentColor));
+        while( previousStart < text.size() && (start = text.find("$$$", previousStart)) != string::npos &&
+                                              (end = text.find("$$$", start + 3)) != string::npos) {
+            result.push_back(pair<string, Color3B>{text.substr(previousStart, start - previousStart), currentColor});
+            currentColor = determineColor(text.substr(start + 3, end - start - 3));
+            previousStart = end + 3;
+        }
+
+        if(result.empty()) {
+            result.push_back(pair<string, Color3B>{text, Color3B::WHITE});
+        }
+
+        return result;
+    }
+
+    Color3B determineColor(const string& color) {
+        if(color == "color_white") return Color3B::WHITE;
+        else if(color == "color_red") return Color3B::RED;
+        else if(color == "color_blue") return Color3B::BLUE;
+        else if(color == "color_green") return Color3B::GREEN;
+
+        try {
+            uint32_t number = std::stoi(color);
+            return integerToColor(number);
+
+        } catch(std::invalid_argument invalid) {
 
         }
 
-        return clearedText;
+        return Color3B::WHITE;
     }
 
-    vector<pair<string, Color3B>> clearText(string text) {
-        string clearedText = text;
-        std::size_t start = clearedText.find("$$$");
-        if(start == string::npos) break;
-        std::size_t end = clearedText.find("$$$", start + 3);
-        while( (start = clearedText.find("$$$")) != string::npos &&
-               (end = clearedText.find("$$$", start + 3)) != string::npos) {
-            clearedText.erase(start, end + 3 - start);
-        }
-
-        return clearedText;
-    }
     string substitute(entt::registry& registry, const string& unformattedText) {
         string text = unformattedText;
         map<string, string> dataMap = collectData(registry);
         for(auto item : dataMap) {
             std::size_t variablePos = 0;
-            while( (variablePos = text.find(item->first, variablePos)) != string::npos) {
-                text.replace(variablePos, item->first.size(), item->second);
+            while( (variablePos = text.find(item.first, variablePos)) != string::npos) {
+                text.replace(variablePos, item.first.size(), item.second);
             }
         }
 
@@ -100,13 +138,13 @@ private:
         }
 
         DialogInfo& dialogInfo = registry.ctx<DialogInfo>();
-        if(registry.valid(dialogInfo.member)) {
-            if(registry.has<Cell>(dialogInfo.member)) {
-                Cell& cellComponent = registry.get<Cell>(dialogInfo.member);
+        if(registry.valid(dialogInfo.dialogMember)) {
+            if(registry.has<Cell>(dialogInfo.dialogMember)) {
+                Cell& cellComponent = registry.get<Cell>(dialogInfo.dialogMember);
 
                 data["$$$dialogmember_name$$$"] = cellComponent.name;
-            } else if(registry.has<Creature>(dialogInfo.member)) {
-                 Creature& creatureComponent = registry.get<Creature>(dialogInfo.member);
+            } else if(registry.has<Creature>(dialogInfo.dialogMember)) {
+                 Creature& creatureComponent = registry.get<Creature>(dialogInfo.dialogMember);
 
 //                data["$$$dialogmember_race$$$"] = creatureComponent.race.name;
 //                data["$$$dialogmember_class$$$"] = creatureComponent.class.name;

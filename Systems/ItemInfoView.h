@@ -17,6 +17,7 @@ using namespace cocos2d::StringUtils;
 #include "ui/Scrollbar.h"
 #include "ui/UIText.h"
 
+#include "TextGenerator.h"
 
 class ItemInfoView: public ISystem {
 public:
