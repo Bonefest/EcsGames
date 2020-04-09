@@ -25,10 +25,9 @@ using std::make_pair;
 USING_NS_CC;
 
 class TextGenerator {
-
+public:
     cocos2d::ui::Text* generateText(entt::registry& registry, const string& unformattedText, float fontSize, float maxWidth) {
         string substitutedText = substitute(registry, unformattedText);
-        log("%s", substitutedText.c_str());
 
 
         vector<pair<string, Color3B>> parsedColorsText = parseColorsText(substitutedText);
@@ -40,22 +39,24 @@ class TextGenerator {
 
         wrappedText = cutMessage(wrappedText, fontSize, maxWidth);
         cocos2d::ui::Text* uitext = cocos2d::ui::Text::create(wrappedText, Constants::StandardFontName, fontSize);
+        uitext->retain();
 
         Color3B currentColor;
         int currentPairIndex = -1;
-        std::size_t pairStringVisibleChars = 0, wrappedStringVisibleChars = 0;
+        std::size_t pairStringVisibleChars = 0, wrappedStringVisibleChars = 1;
         for(std::size_t i = 0;i < wrappedText.size(); ++i) {
-            if(wrappedStringVisibleChars >= pairStringVisibleChars) {
-                currentPairIndex++;
-                pairStringVisibleChars = wrappedStringVisibleChars = 0;
-                for(auto sym : parsedColorsText[currentPairIndex].first) {
-                    if(isgraph(sym)) pairStringVisibleChars++;
-                }
-                currentColor = parsedColorsText[currentPairIndex].second;
-            }
-
             if(isgraph(wrappedText[i])) {
+                log("%c", wrappedText[i]);
                 wrappedStringVisibleChars++;
+                if(wrappedStringVisibleChars >= pairStringVisibleChars) {
+                    currentPairIndex++;
+                    pairStringVisibleChars = wrappedStringVisibleChars = 0;
+                    for(auto sym : parsedColorsText[currentPairIndex].first) {
+                        if(isgraph(sym)) pairStringVisibleChars++;
+                    }
+                    currentColor = parsedColorsText[currentPairIndex].second;
+                }
+
                 Sprite* sprite = uitext->getLetter(i);
                 if(sprite != nullptr) {
                     sprite->setColor(currentColor);
@@ -75,14 +76,13 @@ private:
 
         while( previousStart < text.size() && (start = text.find("$$$", previousStart)) != string::npos &&
                                               (end = text.find("$$$", start + 3)) != string::npos) {
-            result.push_back(pair<string, Color3B>{text.substr(previousStart, start - previousStart), currentColor});
+            string sstr = text.substr(previousStart, start - previousStart);
+            if(!sstr.empty())
+                result.push_back(pair<string, Color3B>{sstr, currentColor});
             currentColor = determineColor(text.substr(start + 3, end - start - 3));
             previousStart = end + 3;
         }
-
-        if(result.empty()) {
-            result.push_back(pair<string, Color3B>{text, Color3B::WHITE});
-        }
+        result.push_back(pair<string, Color3B>{text.substr(previousStart), currentColor});
 
         return result;
     }
@@ -92,10 +92,13 @@ private:
         else if(color == "color_red") return Color3B::RED;
         else if(color == "color_blue") return Color3B::BLUE;
         else if(color == "color_green") return Color3B::GREEN;
+        else if(color == "color_gray") return Color3B::GRAY;
+        else if(color == "color_magenta") return Color3B::MAGENTA;
 
         try {
-            uint32_t number = std::stoi(color);
+            uint32_t number = std::stoi(color, nullptr, 16);
             return integerToColor(number);
+
 
         } catch(std::invalid_argument invalid) {
 

@@ -84,6 +84,10 @@ public:
         registry.assign<Controllable>(player);
         registry.assign<Drawable>(player, EntityAnimation({"Wall.png", "Floor.png"}, 1.0f));
         registry.assign<Cell>(player, 3, 3, -1);
+        registry.assign<Creature>(player);
+
+        Cell& playerCell = registry.get<Cell>(player);
+        playerCell.name = "monster";
 
         Controllable& controllable = registry.get<Controllable>(player);
         for(int i = 0;i < 24; ++i) {

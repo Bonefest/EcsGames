@@ -63,25 +63,24 @@ public:
 
             _scrollbar->addChild(container);
 
-            vector<Text> information;
-            information.push_back(Text{itemComponent.description, Color3B::WHITE});
-            information.push_back(Text{format("Weight %.2f pounds\nVolume %.2f gallons", itemComponent.weight, itemComponent.volume), Color3B(220, 220, 220)});
+            vector<string> information;
+            information.push_back(itemComponent.description);
+            information.push_back(format("Weight $$$color_gray$$$%.2f$$$color_white$$$ pounds\nVolume $$$color_gray$$$%.2f$$$color_white$$$ gallons", itemComponent.weight, itemComponent.volume));
 
-            vector<Text> generatedText = generateAttributesInformation(itemComponent.scalarAttributes, "%s %+f", Color3B::WHITE);
+            vector<string> generatedText = generateAttributesInformation(itemComponent.scalarAttributes, "%s $$$color_green$$$%+.2f", "%s $$$color_red$$$%+.2f");
             information.insert(information.end(), generatedText.begin(), generatedText.end());
-            generatedText = generateAttributesInformation(itemComponent.percentAttributes, "%s %+f%%", Color3B(200, 200, 255));
-            information.insert(information.end(), generatedText.begin(), generatedText.end());
-
-            information.push_back(Text{"\nLIMITATIONS", Color3B::WHITE});
-
-            generatedText = generateAttributesInformation(itemComponent.attributesLimitations, "%s %+f and more", Color3B(255, 200, 200));
+            generatedText = generateAttributesInformation(itemComponent.percentAttributes, "%s $$$color_green$$$%+.2f%%", "%s $$$color_red$$$%+.2f%%");
             information.insert(information.end(), generatedText.begin(), generatedText.end());
 
-            for(Text text : information) {
-                cocos2d::ui::Text* uitext = cocos2d::ui::Text::create(cutMessage(text.text, 12.0f, _scrollbar->getContentSize().width), Constants::StandardFontName, 12.0f);
-                //uitext->getLetter(1)->setColor(Color3B::YELLOW);
-                uitext->setTextColor(Color4B(text.textColor));
-                _scrollbar->addChild(uitext);
+            information.push_back("\nLIMITATIONS");
+
+            generatedText = generateAttributesInformation(itemComponent.attributesLimitations, "%s $$$color_red$$$%+.2f $$$color_white$$$and more", "%s $$$color_red$$$%+.2f $$$color_white$$$and more");
+            information.insert(information.end(), generatedText.begin(), generatedText.end());
+
+            TextGenerator generator;
+
+            for(auto text : information) {
+               _scrollbar->addChild(generator.generateText(registry, text, 12.0f, _scrollbar->getContentSize().width));
             }
         }
     }
@@ -94,42 +93,42 @@ private:
         _currentInformationCont.clear();
     }
 
-    vector<Text> generateAttributesInformation(Attributes attrib, const char* fmt, Color3B color) {
-        vector<Text> rawText;
+    vector<string> generateAttributesInformation(Attributes attrib, const char* goodValueFmt, const char* badValueFmt) {
+        vector<string> rawText;
 
-        if(hasValue(attrib.healthPoints)) rawText.push_back(Text{format(fmt, "Health Points", attrib.healthPoints), color});
-        if(hasValue(attrib.magicPoints)) rawText.push_back(Text{format(fmt, "Magic Points", attrib.magicPoints), color});
+        if(hasValue(attrib.healthPoints)) rawText.push_back(format( ((attrib.healthPoints > 0) ? goodValueFmt : badValueFmt), "Health Points", attrib.healthPoints));
+        if(hasValue(attrib.magicPoints)) rawText.push_back(format( ((attrib.magicPoints > 0) ? goodValueFmt : badValueFmt), "Magic Points", attrib.magicPoints));
 
-        if(hasValue(attrib.strength)) rawText.push_back(Text{format(fmt, "Strength", attrib.strength), color});
-        if(hasValue(attrib.intellect)) rawText.push_back(Text{format(fmt, "Intellect", attrib.intellect), color});
-        if(hasValue(attrib.agility)) rawText.push_back(Text{format(fmt, "Agility", attrib.agility), color});
-        if(hasValue(attrib.vitality)) rawText.push_back(Text{format(fmt, "Vitality", attrib.vitality), color});
-        if(hasValue(attrib.charisma)) rawText.push_back(Text{format(fmt, "Charisma", attrib.charisma), color});
+        if(hasValue(attrib.strength)) rawText.push_back(format( ((attrib.strength > 0) ? goodValueFmt : badValueFmt), "Strength", attrib.strength));
+        if(hasValue(attrib.intellect)) rawText.push_back(format( ((attrib.intellect > 0) ? goodValueFmt : badValueFmt), "Intellect", attrib.intellect));
+        if(hasValue(attrib.agility)) rawText.push_back(format( ((attrib.agility > 0) ? goodValueFmt : badValueFmt), "Agility", attrib.agility));
+        if(hasValue(attrib.vitality)) rawText.push_back(format( ((attrib.vitality > 0) ? goodValueFmt : badValueFmt), "Vitality", attrib.vitality));
+        if(hasValue(attrib.charisma)) rawText.push_back(format( ((attrib.charisma > 0) ? goodValueFmt : badValueFmt), "Charisma", attrib.charisma));
 
-        if(hasValue(attrib.stamina)) rawText.push_back(Text{format(fmt, "Stamina", attrib.stamina), color});
+        if(hasValue(attrib.stamina)) rawText.push_back(format( ((attrib.stamina > 0) ? goodValueFmt : badValueFmt), "Stamina", attrib.stamina));
 
-        if(hasValue(attrib.stabbingDamage)) rawText.push_back(Text{format(fmt, "Stabbing damage", attrib.stabbingDamage), color});
-        if(hasValue(attrib.cuttingDamage)) rawText.push_back(Text{format(fmt, "Cutting damage", attrib.cuttingDamage), color});
-        if(hasValue(attrib.chopDamage)) rawText.push_back(Text{format(fmt, "Chop damage", attrib.chopDamage), color});
-        if(hasValue(attrib.magicDamage)) rawText.push_back(Text{format(fmt, "Magic damage", attrib.magicDamage), color});
+        if(hasValue(attrib.stabbingDamage)) rawText.push_back(format( ((attrib.stabbingDamage > 0) ? goodValueFmt : badValueFmt), "Stabbing damage", attrib.stabbingDamage));
+        if(hasValue(attrib.cuttingDamage)) rawText.push_back(format( ((attrib.cuttingDamage > 0) ? goodValueFmt : badValueFmt), "Cutting damage", attrib.cuttingDamage));
+        if(hasValue(attrib.chopDamage)) rawText.push_back(format( ((attrib.chopDamage > 0) ? goodValueFmt : badValueFmt), "Chop damage", attrib.chopDamage));
+        if(hasValue(attrib.magicDamage)) rawText.push_back(format( ((attrib.magicDamage > 0) ? goodValueFmt : badValueFmt), "Magic damage", attrib.magicDamage));
 
-        if(hasValue(attrib.physicalCriticalChance)) rawText.push_back(Text{format(fmt, "Physical Critical Chance", attrib.physicalCriticalChance), color});
-        if(hasValue(attrib.magicalCriticalChance)) rawText.push_back(Text{format(fmt, "Magical Critical Chance", attrib.magicalCriticalChance), color});
-        if(hasValue(attrib.additionalGoldChance)) rawText.push_back(Text{format(fmt, "Additional Gold Chance", attrib.additionalGoldChance), color});
+        if(hasValue(attrib.physicalCriticalChance)) rawText.push_back(format( ((attrib.physicalCriticalChance > 0) ? goodValueFmt : badValueFmt), "Physical Critical Chance", attrib.physicalCriticalChance));
+        if(hasValue(attrib.magicalCriticalChance)) rawText.push_back(format( ((attrib.magicalCriticalChance > 0) ? goodValueFmt : badValueFmt), "Magical Critical Chance", attrib.magicalCriticalChance));
+        if(hasValue(attrib.additionalGoldChance)) rawText.push_back(format( ((attrib.additionalGoldChance > 0) ? goodValueFmt : badValueFmt), "Additional Gold Chance", attrib.additionalGoldChance));
 
 
-        if(hasValue(attrib.defense)) rawText.push_back(Text{format(fmt, "Defense", attrib.defense), color});
-        if(hasValue(attrib.magicDefense)) rawText.push_back(Text{format(fmt, "Magic Defense", attrib.magicDefense), color});
+        if(hasValue(attrib.defense)) rawText.push_back(format( ((attrib.defense > 0) ? goodValueFmt : badValueFmt), "Defense", attrib.defense));
+        if(hasValue(attrib.magicDefense)) rawText.push_back(format( ((attrib.magicDefense > 0) ? goodValueFmt : badValueFmt), "Magic Defense", attrib.magicDefense));
 
-        if(hasValue(attrib.fireDamage)) rawText.push_back(Text{format(fmt, "Fire Damage", attrib.fireDamage), color});
-        if(hasValue(attrib.waterDamage)) rawText.push_back(Text{format(fmt, "Water Damage", attrib.waterDamage), color});
-        if(hasValue(attrib.earthDamage)) rawText.push_back(Text{format(fmt, "Earth Damage", attrib.earthDamage), color});
-        if(hasValue(attrib.airDamage)) rawText.push_back(Text{format(fmt, "Air Damage", attrib.airDamage), color});
+        if(hasValue(attrib.fireDamage)) rawText.push_back(format( ((attrib.fireDamage > 0) ? goodValueFmt : badValueFmt), "Fire Damage", attrib.fireDamage));
+        if(hasValue(attrib.waterDamage)) rawText.push_back(format( ((attrib.waterDamage > 0) ? goodValueFmt : badValueFmt), "Water Damage", attrib.waterDamage));
+        if(hasValue(attrib.earthDamage)) rawText.push_back(format( ((attrib.earthDamage > 0) ? goodValueFmt : badValueFmt), "Earth Damage", attrib.earthDamage));
+        if(hasValue(attrib.airDamage)) rawText.push_back(format( ((attrib.airDamage > 0) ? goodValueFmt : badValueFmt), "Air Damage", attrib.airDamage));
 
-        if(hasValue(attrib.fireDamage)) rawText.push_back(Text{format(fmt, "Fire Resistance", attrib.fireResistance), color});
-        if(hasValue(attrib.waterDamage)) rawText.push_back(Text{format(fmt, "Water Resistance", attrib.waterResistance), color});
-        if(hasValue(attrib.earthDamage)) rawText.push_back(Text{format(fmt, "Earth Resistance", attrib.earthResistance), color});
-        if(hasValue(attrib.airDamage)) rawText.push_back(Text{format(fmt, "Air Resistance", attrib.airResistance), color});
+        if(hasValue(attrib.fireResistance)) rawText.push_back(format( ((attrib.fireResistance > 0) ? goodValueFmt : badValueFmt), "Fire Resistance", attrib.fireResistance));
+        if(hasValue(attrib.waterResistance)) rawText.push_back(format( ((attrib.waterResistance > 0) ? goodValueFmt : badValueFmt), "Water Resistance", attrib.waterResistance));
+        if(hasValue(attrib.earthResistance)) rawText.push_back(format( ((attrib.earthResistance > 0) ? goodValueFmt : badValueFmt), "Earth Resistance", attrib.earthResistance));
+        if(hasValue(attrib.airResistance)) rawText.push_back(format( ((attrib.airResistance > 0) ? goodValueFmt : badValueFmt), "Air Resistance", attrib.airResistance));
 
         return rawText;
     }
