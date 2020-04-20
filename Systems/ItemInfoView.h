@@ -26,8 +26,11 @@ public:
 
         auto runningScene = cocos2d::Director::getInstance()->getRunningScene();
         _scrollbar = Scrollbar::createScrollbar(runningScene, Scrollbar::Direction::VERTICAL);
-        _scrollbar->setPosition(Vec2(visibleSize.width * 0.5f, visibleSize.height * 0.1f));
+        _scrollbar->setPosition(Vec2(visibleSize.width * 0.5f + 16.0f, visibleSize.height * 0.1f));
         _scrollbar->setContentSize(Size(visibleSize.width * 0.4f, visibleSize.height * 0.8f));
+        _scrollbar->setBackGroundColorOpacity(127);
+        _scrollbar->setBackGroundColor(Color3B::BLACK);
+        _scrollbar->setBackGroundColorType(Scrollbar::BackGroundColorType::SOLID);
         _scrollbar->setAutoAlignEnabled(true);
         _scrollbar->setAlignOffset(10.0f);
         _scrollbar->setMargin(20.0f, 20.0f, 20.0f, 20.0f);
@@ -44,6 +47,8 @@ public:
 
     void setItem(entt::registry& registry, entt::entity item) {
         if(registry.valid(item) && registry.has<ItemComponent>(item)) {
+            _scrollbar->removeAllChildren();
+
             clearText();
 
             ItemComponent& itemComponent = registry.get<ItemComponent>(item);

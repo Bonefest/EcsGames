@@ -89,6 +89,12 @@ public:
         Cell& playerCell = registry.get<Cell>(player);
         playerCell.name = "monster";
 
+        Creature& creature = registry.get<Creature>(player);
+        creature.inventoryItems.push_back(registry.ctx<ItemDatabase>().createItem(registry, 1));
+        creature.inventoryItems.push_back(registry.ctx<ItemDatabase>().createItem(registry, 1));
+        creature.inventoryItems.push_back(registry.ctx<ItemDatabase>().createItem(registry, 1));
+        creature.inventoryItems.push_back(registry.ctx<ItemDatabase>().createItem(registry, 1));
+
         Controllable& controllable = registry.get<Controllable>(player);
         for(int i = 0;i < 24; ++i) {
             controllable.discoveredBlocks.emplace_back();

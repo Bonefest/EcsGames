@@ -29,7 +29,7 @@ public:
         _scrollbar->setAlignOffset(20.0f);
         _scrollbar->setMargin(20.0f, 20.0f, 0.0f, 0.0f);
         _scrollbar->setScrollBarEnabled(false);
-        _scrollbar->setContentSize(Size(_visibleSize.width * 0.35f, _visibleSize.height * 0.8f));
+        _scrollbar->setContentSize(Size(_visibleSize.width * 0.4f, _visibleSize.height * 0.8f));
 
         runningScene->addChild(_scrollbar);
     }

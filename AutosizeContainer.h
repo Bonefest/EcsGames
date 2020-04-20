@@ -31,7 +31,6 @@ public:
             maxX = std::max(maxX, pos.x + size.width * (1.0f - anchor.x));
             maxY = std::max(maxY, pos.y + size.height * (1.0f - anchor.y));
         }
-        log("%f %f %f %f", minX, minY, maxX, maxY);
 
         setContentSize(Size(maxX - minX, maxY - minY));
     }
