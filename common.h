@@ -39,6 +39,7 @@ namespace Constants {
         InventoryViewTag,
         DialogViewTag,
         ItemViewTag,
+        ItemListTag
     };
 
     enum AnimationsTags {

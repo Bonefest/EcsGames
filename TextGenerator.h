@@ -46,7 +46,6 @@ public:
         std::size_t pairStringVisibleChars = 0, wrappedStringVisibleChars = 1;
         for(std::size_t i = 0;i < wrappedText.size(); ++i) {
             if(isgraph(wrappedText[i])) {
-                log("%c", wrappedText[i]);
                 wrappedStringVisibleChars++;
                 if(wrappedStringVisibleChars >= pairStringVisibleChars) {
                     currentPairIndex++;

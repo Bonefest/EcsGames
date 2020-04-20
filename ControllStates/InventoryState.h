@@ -3,6 +3,7 @@
 
 #include "ControllState.h"
 #include "../Systems/ItemInfoView.h"
+#include "../Systems/ItemListView.h"
 
 class InventoryControllState: public ControllState {
 public:
@@ -15,7 +16,13 @@ public:
                                                 const UnprocessedKeyActionEvent& event);
     virtual void onExit(IStateOwner* owner, entt::registry& registry, entt::dispatcher& dispatcher);
 private:
+    void initItems(entt::registry& registry);
+
     shared_ptr<ItemInfoView> _itemInfoView;
+    shared_ptr<ItemListView> _itemListView;
+
+    vector<string> _itemsNames;
+    vector<entt::entity> _items;
 };
 
 
